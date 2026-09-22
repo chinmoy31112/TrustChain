@@ -202,11 +202,11 @@ function ProfileContent() {
                   return (
                     <Link key={c.id} href={`/campaign/${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                       <div className="card" style={{ padding: '1.5rem', height: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                          <h3>{c.title}</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem', gap: '0.75rem' }}>
+                          <h3 style={{ wordBreak: 'break-word', margin: 0 }}>{c.title}</h3>
                           {(() => {
                             const statusBadge = getCampaignStatusBadge(c);
-                            return <span className={`badge ${statusBadge.badgeCls}`}>{statusBadge.label}</span>;
+                            return <span className={`badge ${statusBadge.badgeCls}`} style={{ flexShrink: 0 }} suppressHydrationWarning>{statusBadge.label}</span>;
                           })()}
                         </div>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>

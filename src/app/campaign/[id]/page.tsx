@@ -272,7 +272,7 @@ export default function CampaignDetailPage() {
                 </span>
                 {(() => {
                   const badge = getCampaignStatusBadge(c);
-                  return <span className={`badge ${badge.badgeCls}`}>{badge.label}</span>;
+                  return <span className={`badge ${badge.badgeCls}`} suppressHydrationWarning>{badge.label}</span>;
                 })()}
               </div>
             </div>

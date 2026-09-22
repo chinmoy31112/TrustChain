@@ -1221,6 +1221,13 @@ select.form-control option { background: #0d0d2b; }
   gap: 0;
   border-bottom: 1px solid var(--border);
   margin-bottom: 2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-btn {
@@ -1234,6 +1241,8 @@ select.form-control option { background: #0d0d2b; }
   transition: all var(--transition);
   cursor: pointer;
   margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover { color: var(--text-primary); }

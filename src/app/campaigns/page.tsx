@@ -248,7 +248,7 @@ function CampaignsContent() {
                       <div className="campaign-card-meta">
                         {(() => {
                           const statusBadge = getCampaignStatusBadge(c);
-                          return <span className={`badge ${statusBadge.badgeCls}`}>{statusBadge.label}</span>;
+                          return <span className={`badge ${statusBadge.badgeCls}`} suppressHydrationWarning>{statusBadge.label}</span>;
                         })()}
                         <span>{formatTimeLeft(c.deadline, c)}</span>
                         <span>{c.donorCount || 0} Donors</span>

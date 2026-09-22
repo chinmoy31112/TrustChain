@@ -12,25 +12,6 @@ export function useFundContractAddress() {
 // Live baseline on-chain snapshot for contract 0x4F0F20682ae2e929c07c37b4964a07163aDBFc18 on Mantle Sepolia
 export const ONCHAIN_BASELINE_CAMPAIGNS: CampaignData[] = [
   {
-    id: 2,
-    creator: '0x621121F08BC8eedF55D8bF0eC2f5014692c44c0f',
-    title: 'Testing',
-    description: 'Creating for testing purpose',
-    category: 'Technology',
-    imageUrl: 'https://www.testingtime.com/app/uploads/2017/07/Grundregeln_fuer_User_Testing.jpg',
-    ipfsHash: '',
-    goal: 10000000000000000000n, // 10 MNT
-    raised: 5000000000000000000n, // 5 MNT
-    deadline: 1793284835,
-    withdrawn: false,
-    active: true,
-    donorCount: 1,
-    voteCount: 0,
-    againstCount: 0,
-    createdAt: 1788100835,
-    status: 0,
-  },
-  {
     id: 1,
     creator: '0x621121F08BC8eedF55D8bF0eC2f5014692c44c0f',
     title: 'Testing',
@@ -49,6 +30,25 @@ export const ONCHAIN_BASELINE_CAMPAIGNS: CampaignData[] = [
     createdAt: 1788077321,
     status: 2,
   },
+  {
+    id: 2,
+    creator: '0x621121F08BC8eedF55D8bF0eC2f5014692c44c0f',
+    title: 'Testing',
+    description: 'Creating for testing purpose',
+    category: 'Technology',
+    imageUrl: 'https://www.testingtime.com/app/uploads/2017/07/Grundregeln_fuer_User_Testing.jpg',
+    ipfsHash: '',
+    goal: 10000000000000000000n, // 10 MNT
+    raised: 5000000000000000000n, // 5 MNT
+    deadline: 1793284835,
+    withdrawn: false,
+    active: true,
+    donorCount: 1,
+    voteCount: 0,
+    againstCount: 0,
+    createdAt: 1788100835,
+    status: 0,
+  },
 ];
 
 export const ONCHAIN_BASELINE_STATS = {
@@ -66,6 +66,44 @@ export const ONCHAIN_BASELINE_LEADERBOARD = [
   },
 ];
 
+export const ONCHAIN_BASELINE_DONOR_ADDRESS = '0x621121f08bc8eedf55d8bf0ec2f5014692c44c0f';
+
+export interface DonorStats {
+  wallet: `0x${string}`;
+  totalDonated: bigint;
+  donationCount: number;
+  firstDonation: number;
+  nftCount: number;
+}
+
+export const ONCHAIN_BASELINE_DONOR_STATS: DonorStats = {
+  wallet: '0x621121F08BC8eedF55D8bF0eC2f5014692c44c0f' as `0x${string}`,
+  totalDonated: 5000000000000000000n, // 5 MNT
+  donationCount: 1,
+  firstDonation: 1788100835,
+  nftCount: 1,
+};
+
+export interface DonationRecord {
+  campaignId: number;
+  donor: `0x${string}`;
+  amount: bigint;
+  timestamp: number;
+  nftTokenId: number;
+}
+
+export const ONCHAIN_BASELINE_USER_DONATIONS: Record<string, DonationRecord[]> = {
+  [ONCHAIN_BASELINE_DONOR_ADDRESS]: [
+    {
+      campaignId: 2,
+      donor: '0x621121F08BC8eedF55D8bF0eC2f5014692c44c0f' as `0x${string}`,
+      amount: 5000000000000000000n,
+      timestamp: 1788100835,
+      nftTokenId: 1,
+    },
+  ],
+};
+
 export function useAllCampaigns() {
   const fundAddress = useFundContractAddress();
 
@@ -81,24 +119,27 @@ export function useAllCampaigns() {
     },
   });
 
-  const [cachedList, setCachedList] = useState<CampaignData[]>(() => {
+  const [cachedList, setCachedList] = useState<CampaignData[]>(ONCHAIN_BASELINE_CAMPAIGNS);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem('trustchain_cached_campaigns');
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.map((c: any) => ({
-              ...c,
-              goal: BigInt(c.goal || '0'),
-              raised: BigInt(c.raised || '0'),
-            }));
+            setCachedList(
+              parsed.map((c: any) => ({
+                ...c,
+                goal: BigInt(c.goal || '0'),
+                raised: BigInt(c.raised || '0'),
+              }))
+            );
           }
         }
       } catch {}
     }
-    return ONCHAIN_BASELINE_CAMPAIGNS;
-  });
+  }, []);
 
   useEffect(() => {
     if (Array.isArray(data) && data.length > 0) {
@@ -233,19 +274,20 @@ export function usePlatformStats() {
     },
   });
 
-  const [cachedStats, setCachedStats] = useState<{ campaigns: number; raised: string; donors: number }>(() => {
+  const [cachedStats, setCachedStats] = useState<{ campaigns: number; raised: string; donors: number }>({
+    campaigns: ONCHAIN_BASELINE_STATS.campaigns,
+    raised: ONCHAIN_BASELINE_STATS.raised.toString(),
+    donors: ONCHAIN_BASELINE_STATS.donors,
+  });
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem('trustchain_cached_platform_stats');
-        if (stored) return JSON.parse(stored);
+        if (stored) setCachedStats(JSON.parse(stored));
       } catch {}
     }
-    return {
-      campaigns: ONCHAIN_BASELINE_STATS.campaigns,
-      raised: ONCHAIN_BASELINE_STATS.raised.toString(),
-      donors: ONCHAIN_BASELINE_STATS.donors,
-    };
-  });
+  }, []);
 
   useEffect(() => {
     if (Array.isArray(data) && data.length === 3) {
@@ -286,6 +328,7 @@ export function usePlatformStats() {
 
 export function useDonorStats(address?: `0x${string}`) {
   const fundAddress = useFundContractAddress();
+  const normalizedAddr = address?.toLowerCase();
 
   const { data, isLoading, refetch } = useReadContract({
     address: fundAddress,
@@ -295,20 +338,83 @@ export function useDonorStats(address?: `0x${string}`) {
     query: {
       enabled: Boolean(fundAddress && address),
       retry: 1,
+      staleTime: 60_000,
     },
   });
 
-  return {
-    stats: data
-      ? {
-          wallet: (data as any).wallet,
-          totalDonated: BigInt((data as any).totalDonated?.toString() || '0'),
+  const [cachedStats, setCachedStats] = useState<DonorStats | null>(() => {
+    if (normalizedAddr === ONCHAIN_BASELINE_DONOR_ADDRESS) {
+      return ONCHAIN_BASELINE_DONOR_STATS;
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (!normalizedAddr) {
+      setCachedStats(null);
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`trustchain_cached_donor_${normalizedAddr}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setCachedStats({
+            wallet: parsed.wallet as `0x${string}`,
+            totalDonated: BigInt(parsed.totalDonated || '0'),
+            donationCount: Number(parsed.donationCount || 0),
+            firstDonation: Number(parsed.firstDonation || 0),
+            nftCount: Number(parsed.nftCount || 0),
+          });
+          return;
+        }
+      } catch {}
+    }
+    if (normalizedAddr === ONCHAIN_BASELINE_DONOR_ADDRESS) {
+      setCachedStats(ONCHAIN_BASELINE_DONOR_STATS);
+    } else {
+      setCachedStats(null);
+    }
+  }, [normalizedAddr]);
+
+  useEffect(() => {
+    if (data && normalizedAddr) {
+      try {
+        const obj = {
+          wallet: (data as any).wallet as `0x${string}`,
+          totalDonated: (data as any).totalDonated?.toString() || '0',
           donationCount: Number((data as any).donationCount || 0),
           firstDonation: Number((data as any).firstDonation || 0),
           nftCount: Number((data as any).nftCount || 0),
-        }
-      : null,
-    isLoading,
+        };
+        localStorage.setItem(`trustchain_cached_donor_${normalizedAddr}`, JSON.stringify(obj));
+        setCachedStats({
+          wallet: obj.wallet,
+          totalDonated: BigInt(obj.totalDonated),
+          donationCount: obj.donationCount,
+          firstDonation: obj.firstDonation,
+          nftCount: obj.nftCount,
+        });
+      } catch {}
+    }
+  }, [data, normalizedAddr]);
+
+  const liveStats = data
+    ? {
+        wallet: (data as any).wallet as `0x${string}`,
+        totalDonated: BigInt((data as any).totalDonated?.toString() || '0'),
+        donationCount: Number((data as any).donationCount || 0),
+        firstDonation: Number((data as any).firstDonation || 0),
+        nftCount: Number((data as any).nftCount || 0),
+      }
+    : null;
+
+  const stats = liveStats || cachedStats;
+  const effectiveLoading = isLoading && !data && !stats;
+
+  return {
+    stats,
+    isLoading: effectiveLoading,
     refetch,
   };
 }
@@ -327,23 +433,26 @@ export function useLeaderboard(limit = 10) {
     },
   });
 
-  const [cachedLeaderboard, setCachedLeaderboard] = useState<any[]>(() => {
+  const [cachedLeaderboard, setCachedLeaderboard] = useState<any[]>(ONCHAIN_BASELINE_LEADERBOARD);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem('trustchain_cached_leaderboard');
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.map((d: any) => ({
-              ...d,
-              total: BigInt(d.total || '0'),
-            }));
+            setCachedLeaderboard(
+              parsed.map((d: any) => ({
+                ...d,
+                total: BigInt(d.total || '0'),
+              }))
+            );
           }
         }
       } catch {}
     }
-    return ONCHAIN_BASELINE_LEADERBOARD;
-  });
+  }, []);
 
   useEffect(() => {
     if (Array.isArray(data) && data.length === 2 && Array.isArray(data[0]) && data[0].length > 0) {
@@ -388,13 +497,7 @@ export function useLeaderboard(limit = 10) {
   return { leaderboard, isLoading: effectiveLoading, refetch };
 }
 
-export interface DonationRecord {
-  campaignId: number;
-  donor: `0x${string}`;
-  amount: bigint;
-  timestamp: number;
-  nftTokenId: number;
-}
+// DonationRecord interface is defined above with baseline constants
 
 export function useCampaignDonations(campaignId: number) {
   const fundAddress = useFundContractAddress();
@@ -427,6 +530,7 @@ export function useCampaignDonations(campaignId: number) {
 
 export function useUserDonations(userAddress?: `0x${string}`) {
   const fundAddress = useFundContractAddress();
+  const normalizedAddr = userAddress?.toLowerCase();
 
   const { data, isLoading, refetch } = useReadContract({
     address: fundAddress,
@@ -435,13 +539,67 @@ export function useUserDonations(userAddress?: `0x${string}`) {
     args: userAddress ? [userAddress] : undefined,
     query: {
       enabled: Boolean(fundAddress && userAddress),
-      staleTime: 0,
+      staleTime: 60_000,
       retry: 1,
       retryDelay: 2000,
     },
   });
 
-  const donations: DonationRecord[] = Array.isArray(data)
+  const [cachedDonations, setCachedDonations] = useState<DonationRecord[]>(() => {
+    if (!normalizedAddr) return [];
+    return ONCHAIN_BASELINE_USER_DONATIONS[normalizedAddr] || [];
+  });
+
+  useEffect(() => {
+    if (!normalizedAddr) {
+      setCachedDonations([]);
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`trustchain_cached_user_donations_${normalizedAddr}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setCachedDonations(
+              parsed.map((d: any) => ({
+                campaignId: Number(d.campaignId),
+                donor: d.donor as `0x${string}`,
+                amount: BigInt(d.amount || '0'),
+                timestamp: Number(d.timestamp),
+                nftTokenId: Number(d.nftTokenId),
+              }))
+            );
+            return;
+          }
+        }
+      } catch {}
+    }
+    setCachedDonations(ONCHAIN_BASELINE_USER_DONATIONS[normalizedAddr] || []);
+  }, [normalizedAddr]);
+
+  useEffect(() => {
+    if (Array.isArray(data) && data.length > 0 && normalizedAddr) {
+      try {
+        const list = data.map((d: any) => ({
+          campaignId: Number(d.campaignId),
+          donor: d.donor as `0x${string}`,
+          amount: d.amount?.toString() || '0',
+          timestamp: Number(d.timestamp),
+          nftTokenId: Number(d.nftTokenId),
+        }));
+        localStorage.setItem(`trustchain_cached_user_donations_${normalizedAddr}`, JSON.stringify(list));
+        setCachedDonations(
+          list.map((d: any) => ({
+            ...d,
+            amount: BigInt(d.amount),
+          }))
+        );
+      } catch {}
+    }
+  }, [data, normalizedAddr]);
+
+  const liveDonations: DonationRecord[] = Array.isArray(data)
     ? data.map((d: any) => ({
         campaignId: Number(d.campaignId),
         donor: d.donor as `0x${string}`,
@@ -451,5 +609,8 @@ export function useUserDonations(userAddress?: `0x${string}`) {
       }))
     : [];
 
-  return { donations, isLoading, refetch };
+  const donations = liveDonations.length > 0 ? liveDonations : cachedDonations;
+  const effectiveLoading = isLoading && !data && cachedDonations.length === 0;
+
+  return { donations, isLoading: effectiveLoading, refetch };
 }
