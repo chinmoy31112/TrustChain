@@ -6,6 +6,8 @@ interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt: string;
   fallbackSrc?: string;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 export const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800&auto=format&q=80';

@@ -69,13 +69,13 @@ function CampaignsContent() {
   const displayedCampaigns = filteredAndSortedCampaigns.slice(0, pageSize);
 
   return (
-    <div style={{ paddingTop: 'calc(var(--nav-height) + 1.5rem)', paddingBottom: '5rem' }}>
+    <div className="page-wrapper">
       <div className="container">
         {/* Page Header */}
-        <div className="page-header" style={{ marginBottom: '2.5rem' }}>
+        <div className="page-header" style={{ marginBottom: '2rem' }}>
           <h1 className="page-title">Explore Campaigns</h1>
           <p className="page-desc">
-            Discover verified charitable causes on Mantle Sepolia. Every donation receives an on-chain NFT receipt.
+            Discover verified charitable causes on Mantle Network. Every donation receives an on-chain NFT receipt.
           </p>
         </div>
 
@@ -86,7 +86,7 @@ function CampaignsContent() {
             <input
               type="text"
               className="form-control"
-              placeholder="🔍 Search campaigns by title, description or category..."
+              placeholder="Search campaigns by title, description or category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ paddingRight: '2.5rem' }}
@@ -118,12 +118,12 @@ function CampaignsContent() {
               className="form-control"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              style={{ width: 'auto', padding: '0.5rem 1rem' }}
+              style={{ width: 'auto', minWidth: '145px', padding: '0.5rem 2.25rem 0.5rem 1rem' }}
             >
-              <option value="newest">✨ Newest First</option>
-              <option value="mostFunded">📈 Most Funded</option>
-              <option value="endingSoon">⏱ Ending Soon</option>
-              <option value="mostVoted">👍 Most Voted</option>
+              <option value="newest">Newest First</option>
+              <option value="mostFunded">Most Funded</option>
+              <option value="endingSoon">Ending Soon</option>
+              <option value="mostVoted">Most Voted</option>
             </select>
           </div>
         </div>
@@ -175,7 +175,7 @@ function CampaignsContent() {
               }}
               style={{ background: 'none', border: 'none', color: 'var(--teal)', cursor: 'pointer', fontSize: '0.85rem' }}
             >
-              Clear all filters ↺
+              Clear all filters
             </button>
           )}
         </div>
@@ -184,11 +184,15 @@ function CampaignsContent() {
         {isLoading ? (
           <div className="page-loader" style={{ minHeight: '30vh' }}>
             <div className="spinner"></div>
-            <span>Loading campaigns from Mantle Sepolia...</span>
+            <span>Loading campaigns from Mantle Network...</span>
           </div>
         ) : displayedCampaigns.length === 0 ? (
           <div className="empty-state" style={{ padding: '5rem 2rem' }}>
-            <div className="empty-state-icon">🔍</div>
+            <div className="empty-state-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+            </div>
             <h3>No campaigns found</h3>
             <p style={{ color: 'var(--text-secondary)', margin: '1rem 0' }}>
               Try adjusting your search terms or filter criteria.
@@ -210,7 +214,6 @@ function CampaignsContent() {
               const pct = calcProgress(c.raised, c.goal);
               const raisedStr = formatMnt(c.raised);
               const goalStr = formatMnt(c.goal);
-              const catIcon = getCategoryIcon(c.category);
 
               return (
                 <Link
@@ -227,7 +230,7 @@ function CampaignsContent() {
                         loading="lazy"
                       />
                       <span className="badge badge-purple" style={{ position: 'absolute', top: '12px', left: '12px' }}>
-                        {catIcon} {c.category}
+                        {c.category}
                       </span>
                     </div>
                     <div className="campaign-card-body">
@@ -247,8 +250,8 @@ function CampaignsContent() {
                           const statusBadge = getCampaignStatusBadge(c);
                           return <span className={`badge ${statusBadge.badgeCls}`}>{statusBadge.label}</span>;
                         })()}
-                        <span>⏱ {formatTimeLeft(c.deadline, c)}</span>
-                        <span>👥 {c.donorCount || 0}</span>
+                        <span>{formatTimeLeft(c.deadline, c)}</span>
+                        <span>{c.donorCount || 0} Donors</span>
                       </div>
                     </div>
                   </article>

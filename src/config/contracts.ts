@@ -11,16 +11,16 @@ export const CONTRACT_ADDRESSES = {
 } as const;
 
 export const CATEGORIES = [
-  { label: 'All', icon: '🌍', value: 'all' },
-  { label: 'Education', icon: '📚', value: 'Education' },
-  { label: 'Healthcare', icon: '🏥', value: 'Healthcare' },
-  { label: 'Disaster Relief', icon: '🆘', value: 'Disaster Relief' },
-  { label: 'Environment', icon: '🌿', value: 'Environment' },
-  { label: 'Hunger', icon: '🍱', value: 'Hunger' },
-  { label: 'Animal Welfare', icon: '🐾', value: 'Animal Welfare' },
-  { label: 'Community', icon: '🤝', value: 'Community' },
-  { label: 'Technology', icon: '💻', value: 'Technology' },
-  { label: 'Other', icon: '💡', value: 'Other' },
+  { label: 'All', icon: '', value: 'all' },
+  { label: 'Education', icon: '', value: 'Education' },
+  { label: 'Healthcare', icon: '', value: 'Healthcare' },
+  { label: 'Disaster Relief', icon: '', value: 'Disaster Relief' },
+  { label: 'Environment', icon: '', value: 'Environment' },
+  { label: 'Hunger', icon: '', value: 'Hunger' },
+  { label: 'Animal Welfare', icon: '', value: 'Animal Welfare' },
+  { label: 'Community', icon: '', value: 'Community' },
+  { label: 'Technology', icon: '', value: 'Technology' },
+  { label: 'Other', icon: '', value: 'Other' },
 ] as const;
 
 export const NFT_TIERS = {

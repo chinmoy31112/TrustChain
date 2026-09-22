@@ -8,11 +8,9 @@ export const TARGET_CHAIN_ID = mantleSepoliaTestnet.id; // 5003
 export const wagmiConfig = createConfig({
   chains: [mantleSepoliaTestnet],
   connectors: [
-    // Only EVM-native wallets that support custom chains
-    // Phantom is excluded — it does NOT support Mantle Sepolia
-    injected({ target: 'metaMask' }),
-    injected({ target: 'coinbaseWallet' }),
+    injected(),
   ],
+  multiInjectedProviderDiscovery: true,
   transports: {
     [mantleSepoliaTestnet.id]: http('https://rpc.sepolia.mantle.xyz'),
   },

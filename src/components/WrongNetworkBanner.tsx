@@ -34,7 +34,7 @@ export function WrongNetworkBanner() {
       }}
     >
       <span>
-        ⚠️ You are connected to an unsupported network (Chain ID: {chainId}). Please switch to {TARGET_CHAIN.name} to interact with TrustChain.
+        You are connected to an unsupported network (Chain ID: {chainId}). Please switch to {TARGET_CHAIN.name} to interact with TrustChain.
       </span>
       <button
         onClick={() => switchChain({ chainId: TARGET_CHAIN_ID })}

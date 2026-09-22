@@ -38,7 +38,7 @@ export default function CreateCampaignPage() {
   useEffect(() => {
     if (isDeploySuccess && receipt && !handledReceiptRef.current) {
       handledReceiptRef.current = true;
-      toast.success('Campaign deployed successfully on Mantle Sepolia! 🎉');
+      toast.success('Campaign deployed successfully on Mantle Sepolia!');
       
       // Try to parse CampaignCreated event
       let createdId: number | null = null;
@@ -168,21 +168,28 @@ export default function CreateCampaignPage() {
   const netReceive = goalFloat - platformFee;
 
   return (
-    <div style={{ paddingTop: 'calc(var(--nav-height) + 2rem)', paddingBottom: '5rem' }}>
+    <div className="page-wrapper">
       <div className="container" style={{ maxWidth: '780px' }}>
-        <div className="page-header" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+        <div className="page-header" style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h1 className="page-title">Start a Campaign</h1>
           <p className="page-desc">
-            Launch your decentralized charity initiative on Mantle Sepolia Testnet with automated escrow and NFT receipt issuance.
+            Launch your decentralized charity initiative on Mantle Network with automated escrow and NFT receipt issuance.
           </p>
         </div>
 
         {!isConnected && (
           <div className="card" style={{ padding: '3rem', textAlign: 'center', marginBottom: '2rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <div style={{ width: 56, height: 56, borderRadius: '16px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+            </div>
             <h3 style={{ marginBottom: '0.5rem' }}>Wallet Connection Required</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-              Connect your EVM wallet to Mantle Sepolia Testnet to create and deploy campaigns on-chain.
+              Connect your EVM wallet to Mantle Network to create and deploy campaigns on-chain.
             </p>
           </div>
         )}
@@ -407,7 +414,7 @@ export default function CreateCampaignPage() {
                     className="btn btn-primary btn-lg"
                     disabled={isDeploying || isWaitingReceipt || !isConnected}
                   >
-                    {isDeploying || isWaitingReceipt ? 'Deploying On-Chain...' : '🚀 Deploy Campaign On-Chain'}
+                    {isDeploying || isWaitingReceipt ? 'Deploying On-Chain...' : 'Deploy Campaign On-Chain'}
                   </button>
                 </div>
               </div>

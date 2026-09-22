@@ -49,8 +49,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     switch (type) {
       case 'success': return '✓';
       case 'error': return '✕';
-      case 'warning': return '⚠';
-      default: return 'ℹ';
+      case 'warning': return '!';
+      default: return 'i';
     }
   };
 

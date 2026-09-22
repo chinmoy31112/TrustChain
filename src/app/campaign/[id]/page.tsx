@@ -26,6 +26,19 @@ export default function CampaignDetailPage() {
   const [donationAmount, setDonationAmount] = useState<string>('0.1');
   const [activeTab, setActiveTab] = useState<'about' | 'donors' | 'governance'>('about');
 
+  // Gasless opinion vote state
+  const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
+  const [voteOffset, setVoteOffset] = useState<{ up: number; down: number }>({ up: 0, down: 0 });
+
+  useEffect(() => {
+    if (campaign?.id) {
+      const saved = localStorage.getItem(`trustchain_vote_${campaign.id}`);
+      if (saved === 'up' || saved === 'down') {
+        setUserVote(saved as 'up' | 'down');
+      }
+    }
+  }, [campaign?.id]);
+
   // Wagmi write contracts
   const { data: donateTxHash, writeContract: writeDonate, isPending: isDonating } = useWriteContract();
   const { isLoading: isWaitingDonate, isSuccess: isDonateSuccess } = useWaitForTransactionReceipt({
@@ -50,7 +63,7 @@ export default function CampaignDetailPage() {
   // Re-fetch data on transaction success
   React.useEffect(() => {
     if (isDonateSuccess) {
-      toast.success('Donation confirmed! Your NFT receipt has been minted. 🎉');
+      toast.success('Donation confirmed! Your NFT receipt has been minted.');
       refetch();
       refetchDonations();
     }
@@ -65,7 +78,7 @@ export default function CampaignDetailPage() {
 
   React.useEffect(() => {
     if (isWithdrawSuccess) {
-      toast.success('Funds withdrawn successfully to creator wallet! 💰');
+      toast.success('Funds withdrawn successfully to creator wallet.');
       refetch();
     }
   }, [isWithdrawSuccess, toast, refetch]);
@@ -89,7 +102,13 @@ export default function CampaignDetailPage() {
   if (!campaign) {
     return (
       <div className="container" style={{ padding: '8rem 2rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔍</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '16px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+          </div>
+        </div>
         <h2>Campaign Not Found</h2>
         <p style={{ color: 'var(--text-secondary)', margin: '1rem 0' }}>
           This campaign doesn&apos;t exist or hasn&apos;t been indexed yet.
@@ -157,19 +176,6 @@ export default function CampaignDetailPage() {
     );
   };
 
-  // Gasless opinion vote state
-  const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
-  const [voteOffset, setVoteOffset] = useState<{ up: number; down: number }>({ up: 0, down: 0 });
-
-  useEffect(() => {
-    if (campaign?.id) {
-      const saved = localStorage.getItem(`trustchain_vote_${campaign.id}`);
-      if (saved === 'up' || saved === 'down') {
-        setUserVote(saved as 'up' | 'down');
-      }
-    }
-  }, [campaign?.id]);
-
   const handleVote = (support: boolean) => {
     if (!campaign) return;
     const voteType = support ? 'up' : 'down';
@@ -192,7 +198,7 @@ export default function CampaignDetailPage() {
     localStorage.setItem(`trustchain_vote_${campaign.id}`, voteType);
 
     toast.success(
-      `Opinion recorded: ${support ? '👍 Supported' : '👎 Voted Against'}! Zero gas fee required ⚡`
+      `Opinion recorded: ${support ? 'Supported' : 'Voted Against'}! Zero gas fee required.`
     );
   };
 
@@ -230,7 +236,7 @@ export default function CampaignDetailPage() {
   };
 
   const shareTwitter = () => {
-    const text = encodeURIComponent(`Support "${c.title}" on TrustChain — decentralized charity on Mantle Sepolia 💚`);
+    const text = encodeURIComponent(`Support "${c.title}" on TrustChain — decentralized charity on Mantle Network`);
     const url = encodeURIComponent(window.location.href);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
   };
@@ -241,7 +247,7 @@ export default function CampaignDetailPage() {
   };
 
   return (
-    <div style={{ paddingTop: 'calc(var(--nav-height) + 1.5rem)', paddingBottom: '5rem' }}>
+    <div className="page-wrapper">
       <div className="container">
         {/* Breadcrumb */}
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
@@ -364,7 +370,6 @@ export default function CampaignDetailPage() {
                   </p>
                   {campaignDonations.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                      <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>💚</div>
                       <h4 style={{ marginBottom: '0.5rem' }}>No donations yet</h4>
                       <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                         Be the first to support this campaign and receive an on-chain NFT receipt!
@@ -408,7 +413,7 @@ export default function CampaignDetailPage() {
                                   {shortAddr(d.donor)}
                                 </Link>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                  {donorBadge.icon} {donorBadge.label} Tier · {new Date(d.timestamp * 1000).toLocaleDateString()}
+                                  {donorBadge.label} Tier · {new Date(d.timestamp * 1000).toLocaleDateString()}
                                 </div>
                               </div>
                             </div>
@@ -429,7 +434,7 @@ export default function CampaignDetailPage() {
               <div className="tab-panel active">
                 <h3 style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span>Community Opinion</span>
-                  <span className="badge badge-teal" style={{ fontSize: '0.75rem' }}>⚡ Zero Gas Fee</span>
+                  <span className="badge badge-teal" style={{ fontSize: '0.75rem' }}>Zero Gas Fee</span>
                 </h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
                   Share your opinion to indicate which individual campaigns need funding the most. Voting is completely free and requires zero blockchain transaction fees.
@@ -445,8 +450,8 @@ export default function CampaignDetailPage() {
                     <>
                       <div className="vote-bar-wrap" style={{ marginBottom: '1.5rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                          <span style={{ fontWeight: 600, color: 'var(--teal)' }}>👍 Support ({totalUp})</span>
-                          <span style={{ fontWeight: 600, color: '#ff4757' }}>👎 Against ({totalDown})</span>
+                          <span style={{ fontWeight: 600, color: 'var(--teal)' }}>Support ({totalUp})</span>
+                          <span style={{ fontWeight: 600, color: '#ff4757' }}>Against ({totalDown})</span>
                         </div>
                         <div className="vote-bar-outer">
                           <div
@@ -464,14 +469,14 @@ export default function CampaignDetailPage() {
                           style={userVote === 'up' ? { boxShadow: '0 0 15px rgba(0,212,170,0.4)' } : {}}
                           onClick={() => handleVote(true)}
                         >
-                          {userVote === 'up' ? '✓ Supported' : '👍 Support Campaign'}
+                          {userVote === 'up' ? 'Supported' : 'Support Campaign'}
                         </button>
                         <button
                           className={`btn ${userVote === 'down' ? 'btn-danger' : 'btn-outline'}`}
                           style={userVote === 'down' ? { background: '#ff4757', borderColor: '#ff4757', color: '#fff' } : {}}
                           onClick={() => handleVote(false)}
                         >
-                          {userVote === 'down' ? '✓ Voted Against' : '👎 Vote Against'}
+                          {userVote === 'down' ? 'Voted Against' : 'Vote Against'}
                         </button>
                       </div>
                     </>
@@ -483,10 +488,10 @@ export default function CampaignDetailPage() {
             {/* Creator Controls */}
             {isOwner && (
               <div className="card" style={{ padding: '1.5rem', marginTop: '2rem', borderColor: 'rgba(0,212,170,0.3)' }}>
-                <h4 style={{ color: 'var(--teal)', marginBottom: '0.75rem' }}>⚡ Creator Management Controls</h4>
+                <h4 style={{ color: 'var(--teal)', marginBottom: '0.75rem' }}>Creator Management Controls</h4>
                 {isCancelled ? (
                   <div style={{ padding: '0.85rem 1.25rem', background: 'rgba(255, 71, 87, 0.12)', border: '1px solid #ff4757', borderRadius: '10px', color: '#ff4757', fontWeight: 600, fontSize: '0.9rem' }}>
-                    ✕ Campaign Cancelled — All donor funds have been automatically refunded.
+                    Campaign Cancelled — All donor funds have been automatically refunded.
                   </div>
                 ) : (
                   <>
@@ -499,19 +504,19 @@ export default function CampaignDetailPage() {
                         disabled={!canWithdraw || isWithdrawing || isWaitingWithdraw}
                         onClick={handleWithdraw}
                       >
-                        {isWithdrawing || isWaitingWithdraw ? 'Withdrawing...' : '💰 Withdraw Funds'}
+                        {isWithdrawing || isWaitingWithdraw ? 'Withdrawing...' : 'Withdraw Funds'}
                       </button>
                       <button
                         className="btn btn-danger"
                         disabled={!c.active || isCancelling || isWaitingCancel}
                         onClick={handleCancel}
                       >
-                        {isCancelling || isWaitingCancel ? 'Cancelling...' : '🔒 Cancel & Refund Donors'}
+                        {isCancelling || isWaitingCancel ? 'Cancelling...' : 'Cancel & Refund Donors'}
                       </button>
                     </div>
                     {c.withdrawn && (
                       <p style={{ color: 'var(--teal)', fontSize: '0.85rem', marginTop: '0.75rem' }}>
-                        ✓ Funds have been withdrawn
+                        Funds have been withdrawn
                       </p>
                     )}
                   </>
@@ -578,7 +583,7 @@ export default function CampaignDetailPage() {
                   >
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>NFT Receipt Tier:</span>
                     <span className={`badge ${previewBadge.color}`} style={{ fontWeight: 700 }}>
-                      {previewBadge.icon} {previewBadge.label}
+                      {previewBadge.label}
                     </span>
                   </div>
 
@@ -587,7 +592,7 @@ export default function CampaignDetailPage() {
                     disabled={isDonating || isWaitingDonate}
                     onClick={handleDonate}
                   >
-                    {isDonating || isWaitingDonate ? 'Processing Donation...' : '❤️ Donate Now'}
+                    {isDonating || isWaitingDonate ? 'Processing Donation...' : 'Donate Now'}
                   </button>
 
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.75rem' }}>
@@ -620,9 +625,9 @@ export default function CampaignDetailPage() {
               <div className="divider" style={{ margin: '1.5rem 0' }}></div>
 
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                <p>🔒 Funds secured by smart contract escrow on Mantle Sepolia</p>
-                <p style={{ marginTop: '0.4rem' }}>🧾 Tiered on-chain SVG receipt minted with dynamic metadata</p>
-                <p style={{ marginTop: '0.4rem' }}>⚡ Near-zero gas fees powered by Mantle L2</p>
+                <p>Funds secured by smart contract escrow on Mantle Sepolia</p>
+                <p style={{ marginTop: '0.4rem' }}>Tiered on-chain SVG receipt minted with dynamic metadata</p>
+                <p style={{ marginTop: '0.4rem' }}>Near-zero gas fees powered by Mantle L2</p>
               </div>
             </div>
 
@@ -631,10 +636,10 @@ export default function CampaignDetailPage() {
               <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.75rem' }}>Share Cause</p>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button className="btn btn-secondary btn-sm" onClick={shareTwitter}>
-                  🐦 Twitter
+                  Twitter
                 </button>
                 <button className="btn btn-secondary btn-sm" onClick={copyLink}>
-                  🔗 Copy Link
+                  Copy Link
                 </button>
               </div>
             </div>

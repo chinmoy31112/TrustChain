@@ -29,17 +29,24 @@ export default function DashboardPage() {
   const isMantleSepolia = isConnected && chainId === TARGET_CHAIN_ID;
 
   return (
-    <div style={{ paddingTop: 'calc(var(--nav-height) + 1.5rem)', paddingBottom: '5rem' }}>
+    <div className="page-wrapper">
       <div className="container">
         {/* Header */}
         <div className="page-header" style={{ marginBottom: '2rem' }}>
           <h1 className="page-title">Personal Dashboard</h1>
-          <p className="page-desc">Track your charitable footprint, created causes, and on-chain NFT receipts on Mantle Sepolia.</p>
+          <p className="page-desc">Track your charitable footprint, created causes, and on-chain NFT receipts on Mantle Network.</p>
         </div>
 
         {!isConnected ? (
           <div className="card" style={{ padding: '4rem 2rem', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🔗</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '16px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+              </div>
+            </div>
             <h2 style={{ marginBottom: '0.75rem' }}>Connect Your Wallet</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
               Connect your EVM wallet to view your real-time on-chain donation history, campaigns, and collectible SVG NFT receipts.
@@ -148,7 +155,12 @@ export default function DashboardPage() {
               <div>
                 {myCampaigns.length === 0 ? (
                   <div className="empty-state" style={{ padding: '4rem 2rem' }}>
-                    <div className="empty-state-icon">📋</div>
+                    <div className="empty-state-icon">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                      </svg>
+                    </div>
                     <h3>No campaigns created yet</h3>
                     <p style={{ color: 'var(--text-secondary)', margin: '1rem 0' }}>
                       Start your first charitable fundraising initiative today.
@@ -182,8 +194,8 @@ export default function DashboardPage() {
                               <div className="progress-bar-inner" style={{ width: `${pct}%` }}></div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                              <span>⏱ {formatTimeLeft(c.deadline, c)}</span>
-                              <span>👥 {c.donorCount} Donors</span>
+                              <span>{formatTimeLeft(c.deadline, c)}</span>
+                              <span>{c.donorCount} Donors</span>
                             </div>
                           </div>
                         </Link>
@@ -200,7 +212,6 @@ export default function DashboardPage() {
                 <h3 style={{ marginBottom: '1.25rem' }}>Contribution Records</h3>
                 {userDonations.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>💰</div>
                     <h4 style={{ marginBottom: '0.5rem' }}>No donations yet</h4>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                       Your on-chain donation history will appear here after your first contribution.
@@ -221,25 +232,25 @@ export default function DashboardPage() {
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             padding: '1rem',
-                            borderRadius: '10px',
+                            borderRadius: '12px',
                             background: 'rgba(255,255,255,0.02)',
                             border: '1px solid var(--border)',
-                            flexWrap: 'wrap',
-                            gap: '0.75rem',
                           }}
                         >
                           <div>
-                            <Link href={`/campaign/${item.campaignId}`} style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                            <Link href={`/campaign/${item.campaignId}`} style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
                               Campaign #{item.campaignId}
                             </Link>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                              {new Date(item.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · Verified on Mantle Sepolia
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                              {new Date(item.timestamp * 1000).toLocaleDateString()} · Block confirmed
                             </div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontWeight: 700, color: 'var(--teal)' }}>+{formatMnt(item.amount)} MNT</div>
-                            <span className={`badge ${badge.color}`} style={{ fontSize: '0.7rem' }}>
-                              {badge.icon} {badge.label} Receipt
+                            <div style={{ fontWeight: 700, color: 'var(--teal)' }}>
+                              +{formatMnt(item.amount)} MNT
+                            </div>
+                            <span className={`badge ${badge.color}`} style={{ fontSize: '0.7rem', marginTop: '0.25rem' }}>
+                              {badge.label} Tier
                             </span>
                           </div>
                         </div>
@@ -255,7 +266,13 @@ export default function DashboardPage() {
               <div>
                 {tokenIds.length === 0 ? (
                   <div className="empty-state" style={{ padding: '4rem 2rem' }}>
-                    <div className="empty-state-icon">🎨</div>
+                    <div className="empty-state-icon">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                        <circle cx="9" cy="9" r="2"/>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                      </svg>
+                    </div>
                     <h3>No NFT receipts yet</h3>
                     <p style={{ color: 'var(--text-secondary)', margin: '1rem 0' }}>
                       Donate to any campaign and your on-chain SVG NFT receipt will appear here automatically.

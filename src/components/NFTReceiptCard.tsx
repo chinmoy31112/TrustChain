@@ -24,7 +24,6 @@ export function NFTReceiptCard({ tokenId }: NFTReceiptCardProps) {
   const amount = receipt?.amount || 0n;
   const campaignTitle = receipt?.campaignTitle || `Campaign #${receipt?.campaignId || '?'}`;
   const badge = getDonorBadge(amount);
-  const tierIcon = tier === 'Diamond' ? '💎' : tier === 'Gold' ? '🥇' : tier === 'Silver' ? '🥈' : '🥉';
 
   return (
     <div className="card" style={{ padding: '1.5rem', textAlign: 'center', position: 'relative' }}>
@@ -37,7 +36,14 @@ export function NFTReceiptCard({ tokenId }: NFTReceiptCardProps) {
           border: '1px solid rgba(0,212,170,0.3)',
         }}
       >
-        <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>{tierIcon}</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <div style={{ width: 56, height: 56, borderRadius: '16px', background: 'rgba(0, 212, 170, 0.1)', border: '1px solid rgba(0, 212, 170, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2l8 4.5v6c0 5.25-3.5 10-8 11.5C7.5 22.5 4 17.75 4 12.5v-6L12 2z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+          </div>
+        </div>
         <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--teal)' }}>
           {formatMnt(amount)} MNT
         </div>

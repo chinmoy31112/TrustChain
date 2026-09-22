@@ -16,12 +16,12 @@ export default function LeaderboardPage() {
   const podiumRanks = [2, 1, 3];
 
   return (
-    <div style={{ paddingTop: 'calc(var(--nav-height) + 1.5rem)', paddingBottom: '5rem' }}>
+    <div className="page-wrapper">
       <div className="container">
         {/* Header */}
-        <div className="page-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <div className="page-header" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h1 className="page-title">Donor Leaderboard</h1>
-          <p className="page-desc">Celebrating the top contributors driving transparent change on Mantle Sepolia Testnet.</p>
+          <p className="page-desc">Celebrating the top contributors driving transparent change on Mantle Network.</p>
         </div>
 
         {/* Podium View */}
@@ -53,8 +53,10 @@ export default function LeaderboardPage() {
                     border: isFirst ? '2px solid var(--teal)' : '1px solid var(--border)',
                   }}
                 >
-                  <div style={{ fontSize: isFirst ? '2.5rem' : '1.8rem', marginBottom: '0.5rem' }}>
-                    {podiumRanks[i] === 1 ? '🥇' : podiumRanks[i] === 2 ? '🥈' : '🥉'}
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                    <span style={{ width: 36, height: 36, borderRadius: '50%', background: isFirst ? 'var(--teal)' : 'rgba(255,255,255,0.1)', color: isFirst ? '#07071a' : '#fff', fontWeight: 800, fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      #{podiumRanks[i]}
+                    </span>
                   </div>
                   <div
                     style={{
@@ -85,7 +87,7 @@ export default function LeaderboardPage() {
                     {formatMnt(d.total)} MNT
                   </div>
                   <span className={`badge ${badge.color}`} style={{ marginTop: '0.5rem' }}>
-                    {badge.icon} {badge.label}
+                    {badge.label}
                   </span>
                 </div>
               );
@@ -104,13 +106,23 @@ export default function LeaderboardPage() {
             </div>
           ) : leaderboard.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>🏆</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '16px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                    <path d="M4 22h16"/>
+                    <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                  </svg>
+                </div>
+              </div>
               <h3 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>No Donors Yet</h3>
               <p style={{ maxWidth: '400px', margin: '0 auto 1.5rem auto' }}>
                 Be the first to donate to a campaign on Mantle Network and claim the #1 rank on the global leaderboard!
               </p>
               <Link href="/campaigns" className="btn btn-primary btn-sm">
-                🌍 Explore Campaigns to Donate
+                Explore Campaigns to Donate
               </Link>
             </div>
           ) : (
@@ -137,7 +149,7 @@ export default function LeaderboardPage() {
                       }}
                     >
                       <td style={{ padding: '1rem 0.75rem', fontWeight: 700 }}>
-                        {index === 0 ? '🥇 #1' : index === 1 ? '🥈 #2' : index === 2 ? '🥉 #3' : `#${index + 1}`}
+                        #{index + 1}
                       </td>
                       <td style={{ padding: '1rem 0.75rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -167,7 +179,7 @@ export default function LeaderboardPage() {
                       </td>
                       <td style={{ padding: '1rem 0.75rem' }}>
                         <span className={`badge ${badge.color}`}>
-                          {badge.icon} {badge.label}
+                          {badge.label}
                         </span>
                       </td>
                     </tr>

@@ -71,30 +71,19 @@ export function formatTimeLeft(
 }
 
 export function getCategoryIcon(cat: string): string {
-  const map: Record<string, string> = {
-    Education: '📚',
-    Healthcare: '🏥',
-    'Disaster Relief': '🆘',
-    Environment: '🌿',
-    Hunger: '🍱',
-    'Animal Welfare': '🐾',
-    Community: '🤝',
-    Technology: '💻',
-    Other: '💡',
-  };
-  return map[cat] || '💡';
+  return '';
 }
 
 export function getDonorBadge(amountWei: bigint | string | number) {
   try {
     const weiBigInt = typeof amountWei === 'bigint' ? amountWei : BigInt(amountWei.toString());
     const val = parseFloat(formatEther(weiBigInt));
-    if (val >= NFT_TIERS.diamond.min) return { label: 'Diamond', color: 'badge-teal', icon: '💎' };
-    if (val >= NFT_TIERS.gold.min) return { label: 'Gold', color: 'badge-gold', icon: '🥇' };
-    if (val >= NFT_TIERS.silver.min) return { label: 'Silver', color: 'badge-gray', icon: '🥈' };
-    return { label: 'Bronze', color: 'badge-bronze', icon: '🥉' };
+    if (val >= NFT_TIERS.diamond.min) return { label: 'Diamond', color: 'badge-teal', icon: '' };
+    if (val >= NFT_TIERS.gold.min) return { label: 'Gold', color: 'badge-gold', icon: '' };
+    if (val >= NFT_TIERS.silver.min) return { label: 'Silver', color: 'badge-gray', icon: '' };
+    return { label: 'Bronze', color: 'badge-bronze', icon: '' };
   } catch {
-    return { label: 'Bronze', color: 'badge-bronze', icon: '🥉' };
+    return { label: 'Bronze', color: 'badge-bronze', icon: '' };
   }
 }
 
@@ -164,9 +153,9 @@ export function getCampaignStatusBadge(c: Parameters<typeof getCampaignStatus>[0
   const status = getCampaignStatus(c);
   switch (status) {
     case 'cancelled':
-      return { label: 'Cancelled ✕', badgeCls: 'badge-danger', status };
+      return { label: 'Cancelled', badgeCls: 'badge-danger', status };
     case 'completed':
-      return { label: 'Goal Met ✓', badgeCls: 'badge-gold', status };
+      return { label: 'Goal Met', badgeCls: 'badge-gold', status };
     case 'ended':
       return { label: 'Ended', badgeCls: 'badge-gray', status };
     case 'active':
