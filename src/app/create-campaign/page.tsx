@@ -293,7 +293,7 @@ export default function CreateCampaignPage() {
             {/* Step 2: Target & Media */}
             {currentStep === 2 && (
               <div className="step-content active">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
+                <div className="form-row">
                   <div className="form-group">
                     <label className="form-label">Fundraising Target (MNT) *</label>
                     <div className="input-group">

@@ -96,7 +96,7 @@ export default function LeaderboardPage() {
         )}
 
         {/* Global Leaderboard Table */}
-        <div className="card" style={{ padding: '1.5rem', overflowX: 'auto' }}>
+        <div className="card" style={{ padding: '1.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <h3 style={{ marginBottom: '1.5rem' }}>Global Donor Rankings</h3>
 
           {isLoading ? (
@@ -126,13 +126,13 @@ export default function LeaderboardPage() {
               </Link>
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                  <th style={{ padding: '1rem 0.75rem' }}>Rank</th>
-                  <th style={{ padding: '1rem 0.75rem' }}>Donor Address</th>
-                  <th style={{ padding: '1rem 0.75rem' }}>Total Donated</th>
-                  <th style={{ padding: '1rem 0.75rem' }}>Badge Tier</th>
+                  <th style={{ padding: '1rem 0.75rem', whiteSpace: 'nowrap' }}>Rank</th>
+                  <th style={{ padding: '1rem 0.75rem', whiteSpace: 'nowrap' }}>Donor Address</th>
+                  <th style={{ padding: '1rem 0.75rem', whiteSpace: 'nowrap' }}>Total Donated</th>
+                  <th style={{ padding: '1rem 0.75rem', whiteSpace: 'nowrap' }}>Badge Tier</th>
                 </tr>
               </thead>
               <tbody>
@@ -148,10 +148,10 @@ export default function LeaderboardPage() {
                         background: isMe ? 'rgba(0,212,170,0.08)' : 'transparent',
                       }}
                     >
-                      <td style={{ padding: '1rem 0.75rem', fontWeight: 700 }}>
+                      <td style={{ padding: '1rem 0.75rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
                         #{index + 1}
                       </td>
-                      <td style={{ padding: '1rem 0.75rem' }}>
+                      <td style={{ padding: '1rem 0.75rem', whiteSpace: 'nowrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <div
                             style={{
@@ -174,11 +174,11 @@ export default function LeaderboardPage() {
                           {isMe && <span className="badge badge-teal" style={{ fontSize: '0.65rem' }}>You</span>}
                         </div>
                       </td>
-                      <td style={{ padding: '1rem 0.75rem', fontWeight: 700, color: 'var(--teal)' }}>
+                      <td style={{ padding: '1rem 0.75rem', fontWeight: 700, color: 'var(--teal)', whiteSpace: 'nowrap' }}>
                         {formatMnt(d.total)} MNT
                       </td>
-                      <td style={{ padding: '1rem 0.75rem' }}>
-                        <span className={`badge ${badge.color}`}>
+                      <td style={{ padding: '1rem 0.75rem', whiteSpace: 'nowrap' }}>
+                        <span className={`badge ${badge.color}`} style={{ whiteSpace: 'nowrap' }}>
                           {badge.label}
                         </span>
                       </td>

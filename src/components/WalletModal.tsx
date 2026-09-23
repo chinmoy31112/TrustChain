@@ -48,6 +48,22 @@ function safeCopyText(text: string): boolean {
   }
 }
 
+function getMetaMaskMobileLink(): string {
+  if (typeof window === 'undefined') return 'metamask://';
+  const host = window.location.host || 'localhost:3000';
+  const pathname = window.location.pathname || '/';
+  const search = window.location.search || '';
+  
+  // Format clean URL path (e.g. "10.224.4.42:3000/")
+  let cleanUrl = (host + pathname + search).replace(/^https?:\/\//i, '');
+  if (!cleanUrl.includes('/')) {
+    cleanUrl += '/';
+  }
+
+  // Native custom scheme directly opens MetaMask app in-app browser on Android & iOS
+  return `metamask://dapp/${cleanUrl}`;
+}
+
 function getWalletVisuals(rawName: string, iconUrl?: string) {
   const name = (rawName || '').trim() || 'Browser Wallet';
   const lower = name.toLowerCase();
@@ -402,21 +418,8 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
         setCopied(true);
         setTimeout(() => setCopied(false), 3000);
 
-        const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-        const cleanUrl = window.location.host + window.location.pathname + window.location.search;
-        const intentUrl = `intent://${cleanUrl}#Intent;scheme=http;package=io.metamask;end`;
-        const schemeUrl = `metamask://dapp/${cleanUrl}`;
-
-        try {
-          if (isAndroid) {
-            window.location.href = intentUrl;
-          } else {
-            window.location.href = schemeUrl;
-          }
-        } catch (e) {
-          console.warn('Deep link error:', e);
-        }
-
+        const targetLink = getMetaMaskMobileLink();
+        window.location.href = targetLink;
         setShowMobileGuide(true);
         return;
       }
@@ -572,19 +575,28 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
             </div>
 
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
-              Opening MetaMask Mobile...
+              Connect with MetaMask Mobile
             </h3>
+
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(0, 212, 170, 0.12)', color: 'var(--teal)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, margin: '0.4rem auto 1rem auto', border: '1px solid rgba(0, 212, 170, 0.3)' }}>
+              <span>✓</span> Link Copied to Clipboard
+            </div>
+
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-              Standard mobile browsers cannot run extensions. Open TrustChain inside your <strong>MetaMask Mobile App</strong>.
+              Standard mobile browsers cannot run Web3 extensions. Connect directly through your <strong>MetaMask Mobile in-app browser</strong>.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
               <a
-                href={
-                  typeof window !== 'undefined' && /Android/i.test(navigator.userAgent)
-                    ? `intent://${window.location.host}${window.location.pathname}${window.location.search}#Intent;scheme=http;package=io.metamask;end`
-                    : `metamask://dapp/${typeof window !== 'undefined' ? (window.location.host + window.location.pathname + window.location.search) : ''}`
-                }
+                href={getMetaMaskMobileLink()}
+                onClick={(e) => {
+                  safeCopyText(window.location.href);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2500);
+                  try {
+                    window.location.href = getMetaMaskMobileLink();
+                  } catch {}
+                }}
                 className="btn btn-primary w-full"
                 style={{
                   textDecoration: 'none',
@@ -597,7 +609,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                   gap: '8px',
                 }}
               >
-                <span>🦊</span> Open MetaMask App →
+                <span>🦊</span> Open in MetaMask Browser →
               </a>
 
               <button
@@ -610,16 +622,15 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                 }}
                 style={{ padding: '0.75rem', fontSize: '0.88rem' }}
               >
-                {copied ? '✓ Link Copied to Clipboard!' : '📋 Copy Website Link'}
+                {copied ? '✓ Link Copied!' : '📋 Copy Website Link'}
               </button>
             </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.85rem 1rem', borderRadius: '12px', textAlign: 'left', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.55, border: '1px solid var(--border)', marginBottom: '1rem' }}>
-              <strong style={{ color: 'var(--teal)', display: 'block', marginBottom: '0.25rem' }}>Quick Steps:</strong>
-              1. Tap <strong>Copy Website Link</strong> above.<br />
-              2. Switch to your <strong>MetaMask App</strong>.<br />
-              3. Tap the <strong>Browser icon (🧭)</strong> at the bottom.<br />
-              4. Paste the link into the address bar to connect!
+            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.85rem 1rem', borderRadius: '12px', textAlign: 'left', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, border: '1px solid var(--border)', marginBottom: '1rem' }}>
+              <strong style={{ color: 'var(--teal)', display: 'block', marginBottom: '0.35rem' }}>3 Quick Steps:</strong>
+              1. Tap <strong>Open MetaMask App</strong> above (or switch to MetaMask).<br />
+              2. Tap the <strong>Browser icon (🧭 or 🌐)</strong> at the bottom of MetaMask.<br />
+              3. <strong>Paste the link</strong> into the address bar to connect instantly!<br />
             </div>
 
             <button
@@ -671,14 +682,18 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                 : 'No active Web3 wallet extension was detected in this browser. Install a browser extension or open this page in a Web3 wallet browser.'}
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.75rem' }}>
               {isMobile && (
                 <a
-                  href={
-                    typeof window !== 'undefined' && /Android/i.test(navigator.userAgent)
-                      ? `intent://${window.location.host}${window.location.pathname}${window.location.search}#Intent;scheme=http;package=io.metamask;end`
-                      : `metamask://dapp/${typeof window !== 'undefined' ? (window.location.host + window.location.pathname + window.location.search) : ''}`
-                  }
+                  href={getMetaMaskMobileLink()}
+                  onClick={(e) => {
+                    safeCopyText(window.location.href);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2500);
+                    try {
+                      window.location.href = getMetaMaskMobileLink();
+                    } catch {}
+                  }}
                   className="btn btn-primary w-full"
                   style={{
                     textDecoration: 'none',
@@ -691,7 +706,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                     gap: '8px',
                   }}
                 >
-                  <span>🦊</span> Open in MetaMask App →
+                  <span>🦊</span> Open in MetaMask Browser →
                 </a>
               )}
 
@@ -708,45 +723,6 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                 {copied ? '✓ Website Link Copied!' : '📋 Copy Website Link'}
               </button>
             </div>
-
-            {isMobile && (
-              <div
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  padding: '0.85rem 1rem',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border)',
-                  textAlign: 'left',
-                  fontSize: '0.78rem',
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.6,
-                }}
-              >
-                <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                  Don&apos;t have a wallet app yet?
-                </div>
-                Install MetaMask to create your free wallet:
-                <div style={{ marginTop: '0.35rem', display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-                  <a
-                    href="https://play.google.com/store/apps/details?id=io.metamask"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: 'var(--teal)', fontWeight: 600, textDecoration: 'none' }}
-                  >
-                    Google Play Store ↗
-                  </a>
-                  <span>·</span>
-                  <a
-                    href="https://apps.apple.com/app/metamask/id1438144202"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: 'var(--teal)', fontWeight: 600, textDecoration: 'none' }}
-                  >
-                    App Store ↗
-                  </a>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           /* List of Detected / Mobile Wallets */

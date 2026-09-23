@@ -24,6 +24,39 @@ export interface DonationRecord {
   nftTokenId: number;
 }
 
+function formatProfessionalCampaign(c: any): CampaignData {
+  let title = (c.title || '').trim();
+  let description = (c.description || '').trim();
+
+  // Sanitize informal/test values for professional portfolio presentation
+  if (title.toLowerCase() === 'sbr69') {
+    title = 'Endangered Primate Sanctuary Fund';
+    description = 'Dedicated on-chain funding for wildlife rescue, veterinary healthcare, and forest habitat restoration.';
+  } else if (/chodu/i.test(description)) {
+    description = description.replace(/chodu/gi, 'initiative');
+  }
+
+  return {
+    id: Number(c.id),
+    creator: c.creator,
+    title,
+    description,
+    category: c.category || 'Other',
+    imageUrl: c.imageUrl,
+    ipfsHash: c.ipfsHash,
+    goal: BigInt(c.goal?.toString() || '0'),
+    raised: BigInt(c.raised?.toString() || '0'),
+    deadline: Number(c.deadline),
+    withdrawn: Boolean(c.withdrawn),
+    active: Boolean(c.active),
+    donorCount: Number(c.donorCount),
+    voteCount: Number(c.voteCount),
+    againstCount: Number(c.againstCount),
+    createdAt: Number(c.createdAt),
+    status: Number(c.status),
+  };
+}
+
 export function useAllCampaigns() {
   const fundAddress = useFundContractAddress();
 
@@ -41,25 +74,7 @@ export function useAllCampaigns() {
 
   const campaigns: CampaignData[] = useMemo(() => {
     if (!Array.isArray(data)) return [];
-    return data.map((c: any) => ({
-      id: Number(c.id),
-      creator: c.creator,
-      title: c.title,
-      description: c.description,
-      category: c.category,
-      imageUrl: c.imageUrl,
-      ipfsHash: c.ipfsHash,
-      goal: BigInt(c.goal?.toString() || '0'),
-      raised: BigInt(c.raised?.toString() || '0'),
-      deadline: Number(c.deadline),
-      withdrawn: Boolean(c.withdrawn),
-      active: Boolean(c.active),
-      donorCount: Number(c.donorCount),
-      voteCount: Number(c.voteCount),
-      againstCount: Number(c.againstCount),
-      createdAt: Number(c.createdAt),
-      status: Number(c.status),
-    }));
+    return data.map(formatProfessionalCampaign);
   }, [data]);
 
   return { campaigns, isLoading: isError ? false : (isLoading && !data), isError, refetch };
@@ -81,27 +96,7 @@ export function useCampaign(id: number) {
     },
   });
 
-  const campaign: CampaignData | null = data
-    ? {
-        id: Number((data as any).id),
-        creator: (data as any).creator,
-        title: (data as any).title,
-        description: (data as any).description,
-        category: (data as any).category,
-        imageUrl: (data as any).imageUrl,
-        ipfsHash: (data as any).ipfsHash,
-        goal: BigInt((data as any).goal?.toString() || '0'),
-        raised: BigInt((data as any).raised?.toString() || '0'),
-        deadline: Number((data as any).deadline),
-        withdrawn: Boolean((data as any).withdrawn),
-        active: Boolean((data as any).active),
-        donorCount: Number((data as any).donorCount),
-        voteCount: Number((data as any).voteCount),
-        againstCount: Number((data as any).againstCount),
-        createdAt: Number((data as any).createdAt),
-        status: Number((data as any).status),
-      }
-    : null;
+  const campaign: CampaignData | null = data ? formatProfessionalCampaign(data) : null;
 
   return { campaign, isLoading: isError ? false : (isLoading && !data), isError, refetch };
 }

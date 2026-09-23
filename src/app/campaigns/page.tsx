@@ -129,7 +129,7 @@ function CampaignsContent() {
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="filter-tabs" style={{ marginBottom: '1rem' }}>
+        <div className="filter-tabs" style={{ marginBottom: '1rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {[
             { label: 'All Status', value: 'all' },
             { label: 'Active', value: 'active' },
@@ -148,14 +148,14 @@ function CampaignsContent() {
         </div>
 
         {/* Category Filter Tabs */}
-        <div className="filter-tabs" style={{ marginBottom: '2.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+        <div className="filter-tabs" style={{ marginBottom: '2.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '0.5rem' }}>
           {CATEGORIES.map((cat) => (
             <button
               key={cat.value}
               className={`filter-tab ${activeCategory === cat.value ? 'active' : ''}`}
               onClick={() => setActiveCategory(cat.value)}
             >
-              <span>{cat.icon}</span>
+              {cat.icon ? <span style={{ marginRight: '0.4rem' }}>{cat.icon}</span> : null}
               <span>{cat.label}</span>
             </button>
           ))}

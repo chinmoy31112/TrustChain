@@ -276,13 +276,13 @@ export default function CampaignDetailPage() {
                 alt={c.title}
                 className="detail-hero-img"
               />
-              <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', gap: '0.5rem' }}>
-                <span className="badge badge-purple">
+              <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', zIndex: 2 }}>
+                <span className="badge badge-purple" style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', background: 'rgba(7, 7, 26, 0.78)', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
                   {catIcon} {c.category}
                 </span>
                 {(() => {
                   const badge = getCampaignStatusBadge(c);
-                  return <span className={`badge ${badge.badgeCls}`} suppressHydrationWarning>{badge.label}</span>;
+                  return <span className={`badge ${badge.badgeCls}`} style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', background: 'rgba(7, 7, 26, 0.78)', border: '1px solid rgba(255, 255, 255, 0.2)' }} suppressHydrationWarning>{badge.label}</span>;
                 })()}
               </div>
             </div>

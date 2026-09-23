@@ -1036,23 +1036,38 @@ select.form-control option { background: #0d0d2b; }
 
 .filter-tabs {
   display: flex;
-  gap: 0.3rem;
-  padding: 0.3rem;
+  gap: 0.45rem;
+  padding: 0.35rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  max-width: 100%;
+}
+
+.filter-tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .filter-tab {
-  padding: 0.4rem 0.9rem;
+  padding: 0.45rem 1rem;
   border-radius: calc(var(--radius-md) - 2px);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-secondary);
   background: none;
   border: none;
   transition: all var(--transition);
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
 }
 
 .filter-tab.active,
@@ -1138,6 +1153,13 @@ select.form-control option { background: #0d0d2b; }
   gap: 0;
   border-bottom: 1px solid var(--border);
   margin-bottom: 2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-btn {
@@ -1151,6 +1173,8 @@ select.form-control option { background: #0d0d2b; }
   transition: all var(--transition);
   cursor: pointer;
   margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover { color: var(--text-primary); }
@@ -1226,7 +1250,7 @@ select.form-control option { background: #0d0d2b; }
   .sticky { position: relative; top: 0; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .navbar-links { display: none; }
   .hamburger { display: flex; }
 
@@ -1242,6 +1266,9 @@ select.form-control option { background: #0d0d2b; }
     backdrop-filter: blur(20px);
     z-index: 999;
   }
+}
+
+@media (max-width: 768px) {
 
   .grid-3 { grid-template-columns: 1fr; }
   .grid-2 { grid-template-columns: 1fr; }
@@ -1255,6 +1282,7 @@ select.form-control option { background: #0d0d2b; }
   .footer-grid { grid-template-columns: 1fr; }
 
   .campaign-detail-grid { grid-template-columns: 1fr; }
+  .detail-hero-img { height: 240px; margin-bottom: 1.25rem; }
 }
 
 @media (max-width: 480px) {
@@ -1671,6 +1699,7 @@ select.form-control option { background: #0d0d2b; }
    ════════════════════════════════ */
 .leaderboard-table {
   width: 100%;
+  min-width: 500px;
   border-collapse: collapse;
 }
 
@@ -1678,6 +1707,7 @@ select.form-control option { background: #0d0d2b; }
 .leaderboard-table td {
   padding: 1rem 1.25rem;
   text-align: left;
+  white-space: nowrap;
 }
 
 .leaderboard-table th {

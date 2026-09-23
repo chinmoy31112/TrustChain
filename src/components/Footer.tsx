@@ -48,10 +48,10 @@ export function Footer() {
           <div className="footer-col">
             <h4>Network</h4>
             <ul className="footer-links">
+              <li><a href="https://sepolia.mantlescan.xyz/address/0x4F0F20682ae2e929c07c37b4964a07163aDBFc18" target="_blank" rel="noopener noreferrer">Verified Smart Contracts ↗</a></li>
               <li><a href="https://sepolia.mantlescan.xyz" target="_blank" rel="noopener noreferrer">Mantle Sepolia Explorer ↗</a></li>
               <li><a href="https://faucet.sepolia.mantle.xyz" target="_blank" rel="noopener noreferrer">Mantle Faucet ↗</a></li>
               <li><a href="https://docs.mantle.xyz" target="_blank" rel="noopener noreferrer">Mantle Documentation ↗</a></li>
-              <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">Verified Smart Contracts ↗</a></li>
             </ul>
           </div>
         </div>
