@@ -331,28 +331,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
       }
     }
 
-    // 6. ON MOBILE DEVICES in external browsers (Chrome / Safari):
-    // Standard mobile browsers cannot run desktop extensions, so provide MetaMask detected option!
-    if (isMobile) {
-      if (!seenKeys.has('metamask')) {
-        const visuals = getWalletVisuals('MetaMask');
-        discovered.push({
-          id: 'metamask-mobile',
-          name: 'MetaMask',
-          badge: 'Detected',
-          color: visuals.color,
-          initial: visuals.initial,
-          svgIcon: visuals.svgIcon,
-          isMobileAppOption: true,
-          connector:
-            connectors.find((c) => c.id === 'metaMask') ||
-            connectors.find((c) => c.id === 'injected') ||
-            connectors[0],
-        });
-      }
-    }
-
-    // 7. Generic single injected provider fallback (if on desktop with single unidentified injected wallet)
+    // 6. Generic single injected provider fallback (if on desktop with single unidentified injected wallet)
     if (discovered.length === 0 && !isMobile && eth) {
       const visuals = getWalletVisuals('Browser Wallet');
       const conn = connectors.find((c) => c.id === 'injected') || connectors[0];
@@ -661,7 +640,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
           </div>
         ) : presentWallets.length === 0 ? (
           /* When NO Web3 wallet is present in this browser or tab */
-          <div style={{ padding: '2rem 1.5rem', textAlign: 'center' }}>
+          <div style={{ padding: '1.75rem 1.5rem', textAlign: 'center' }}>
             <div
               style={{
                 width: '52px',
@@ -672,7 +651,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 1.25rem auto',
+                margin: '0 auto 1.1rem auto',
                 border: '1px solid rgba(0, 212, 170, 0.25)',
               }}
             >
@@ -683,25 +662,91 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
               </svg>
             </div>
 
-            <h4 style={{ marginBottom: '0.4rem', fontSize: '1.1rem', color: 'var(--text-primary)', fontWeight: 700 }}>
-              No Wallet Detected
+            <h4 style={{ marginBottom: '0.4rem', fontSize: '1.15rem', color: 'var(--text-primary)', fontWeight: 700 }}>
+              {isMobile ? 'Connect Mobile Wallet' : 'No Wallet Detected'}
             </h4>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.55, marginBottom: '1.25rem' }}>
-              No active Web3 wallet extension or in-app browser was detected in this tab. Open this page inside your wallet&apos;s browser (like MetaMask or Phantom) to connect.
+              {isMobile
+                ? 'Mobile browsers (like Chrome) cannot run wallet extensions directly. Launch your MetaMask app or open this link inside your wallet browser to connect:'
+                : 'No active Web3 wallet extension was detected in this browser. Install a browser extension or open this page in a Web3 wallet browser.'}
             </p>
 
-            <button
-              type="button"
-              className="btn btn-primary w-full"
-              onClick={() => {
-                safeCopyText(window.location.href);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2500);
-              }}
-              style={{ padding: '0.85rem', fontWeight: 700, fontSize: '0.92rem' }}
-            >
-              {copied ? '✓ Website Link Copied!' : '📋 Copy Website Link'}
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              {isMobile && (
+                <a
+                  href={
+                    typeof window !== 'undefined' && /Android/i.test(navigator.userAgent)
+                      ? `intent://${window.location.host}${window.location.pathname}${window.location.search}#Intent;scheme=http;package=io.metamask;end`
+                      : `metamask://dapp/${typeof window !== 'undefined' ? (window.location.host + window.location.pathname + window.location.search) : ''}`
+                  }
+                  className="btn btn-primary w-full"
+                  style={{
+                    textDecoration: 'none',
+                    padding: '0.85rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <span>🦊</span> Open in MetaMask App →
+                </a>
+              )}
+
+              <button
+                type="button"
+                className={`btn ${isMobile ? 'btn-outline' : 'btn-primary'} w-full`}
+                onClick={() => {
+                  safeCopyText(window.location.href);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2500);
+                }}
+                style={{ padding: '0.8rem', fontWeight: 700, fontSize: '0.9rem' }}
+              >
+                {copied ? '✓ Website Link Copied!' : '📋 Copy Website Link'}
+              </button>
+            </div>
+
+            {isMobile && (
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  padding: '0.85rem 1rem',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                  textAlign: 'left',
+                  fontSize: '0.78rem',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.6,
+                }}
+              >
+                <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                  Don&apos;t have a wallet app yet?
+                </div>
+                Install MetaMask to create your free wallet:
+                <div style={{ marginTop: '0.35rem', display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                  <a
+                    href="https://play.google.com/store/apps/details?id=io.metamask"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--teal)', fontWeight: 600, textDecoration: 'none' }}
+                  >
+                    Google Play Store ↗
+                  </a>
+                  <span>·</span>
+                  <a
+                    href="https://apps.apple.com/app/metamask/id1438144202"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--teal)', fontWeight: 600, textDecoration: 'none' }}
+                  >
+                    App Store ↗
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           /* List of Detected / Mobile Wallets */
