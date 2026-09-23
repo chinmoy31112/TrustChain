@@ -43,10 +43,10 @@ export default function HomePage() {
             </p>
 
             <div className="hero-actions">
-              <Link href="/campaigns" className="btn btn-primary btn-lg">
+              <Link href="/campaigns" prefetch={true} className="btn btn-primary btn-lg">
                 Explore Campaigns
               </Link>
-              <Link href="/create-campaign" className="btn btn-secondary btn-lg">
+              <Link href="/create-campaign" prefetch={true} className="btn btn-secondary btn-lg">
                 Start a Campaign
               </Link>
             </div>
@@ -135,6 +135,7 @@ export default function HomePage() {
                   <Link
                     key={c.id}
                     href={`/campaign/${c.id}`}
+                    prefetch={true}
                     className={`hero-float-card ${floatClass}`}
                     style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
                   >

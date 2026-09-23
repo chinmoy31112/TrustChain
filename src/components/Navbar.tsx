@@ -33,6 +33,7 @@ export function Navbar() {
         <div className={`navbar-links ${isMobileMenuOpen ? 'open' : ''}`}>
           <Link
             href="/"
+            prefetch={true}
             className={`nav-link ${pathname === '/' ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -40,6 +41,7 @@ export function Navbar() {
           </Link>
           <Link
             href="/campaigns"
+            prefetch={true}
             className={`nav-link ${pathname.startsWith('/campaign') ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -47,6 +49,7 @@ export function Navbar() {
           </Link>
           <Link
             href="/create-campaign"
+            prefetch={true}
             className={`nav-link ${pathname === '/create-campaign' ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -54,6 +57,7 @@ export function Navbar() {
           </Link>
           <Link
             href="/dashboard"
+            prefetch={true}
             className={`nav-link ${pathname === '/dashboard' ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -61,6 +65,7 @@ export function Navbar() {
           </Link>
           <Link
             href="/leaderboard"
+            prefetch={true}
             className={`nav-link ${pathname === '/leaderboard' ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >

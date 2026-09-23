@@ -28,14 +28,38 @@ export default function CampaignDetailPage() {
 
   // Gasless opinion vote state
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
-  const [voteOffset, setVoteOffset] = useState<{ up: number; down: number }>({ up: 0, down: 0 });
+  const [serverVotes, setServerVotes] = useState<{ up: number; down: number }>({ up: 0, down: 0 });
 
   useEffect(() => {
-    if (campaign?.id) {
-      const saved = localStorage.getItem(`trustchain_vote_${campaign.id}`);
-      if (saved === 'up' || saved === 'down') {
-        setUserVote(saved as 'up' | 'down');
+    if (campaign && campaign.id !== undefined) {
+      // 1. Restore this specific user's choice from localStorage
+      const savedVote = localStorage.getItem(`trustchain_vote_${campaign.id}`);
+      if (savedVote === 'up' || savedVote === 'down') {
+        setUserVote(savedVote);
+      } else {
+        setUserVote(null);
       }
+
+      // 2. Fetch global synced votes from server API
+      let isMounted = true;
+      const fetchVotes = async () => {
+        try {
+          const res = await fetch(`/api/votes?campaignId=${campaign.id}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (isMounted && typeof data.up === 'number' && typeof data.down === 'number') {
+              setServerVotes(data);
+            }
+          }
+        } catch {}
+      };
+
+      fetchVotes();
+      const interval = setInterval(fetchVotes, 3000);
+      return () => {
+        isMounted = false;
+        clearInterval(interval);
+      };
     }
   }, [campaign?.id]);
 
@@ -186,29 +210,80 @@ export default function CampaignDetailPage() {
     );
   };
 
-  const handleVote = (support: boolean) => {
+  const handleVote = async (support: boolean) => {
     if (!campaign) return;
+    // Block voting for ended/completed/cancelled campaigns
+    if (isEnded || pct >= 100 || isCancelled || c.withdrawn) {
+      toast.info('Voting is closed for this campaign.');
+      return;
+    }
     const voteType = support ? 'up' : 'down';
+    const previousVote = userVote;
+
+    // Allow user to toggle off (undo) their vote if clicking the active vote
     if (userVote === voteType) {
-      toast.info('You have already registered your opinion for this campaign.');
+      setUserVote(null);
+      localStorage.removeItem(`trustchain_vote_${campaign.id}`);
+
+      // Optimistic update
+      setServerVotes((prev) => ({
+        up: voteType === 'up' ? Math.max(0, prev.up - 1) : prev.up,
+        down: voteType === 'down' ? Math.max(0, prev.down - 1) : prev.down,
+      }));
+
+      try {
+        const res = await fetch('/api/votes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            campaignId: campaign.id,
+            voteType: null,
+            previousVote: voteType,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setServerVotes(data);
+        }
+      } catch {}
+
+      toast.info('Vote removed.');
       return;
     }
 
-    let upDelta = 0;
-    let downDelta = 0;
-
-    if (userVote === 'up') upDelta -= 1;
-    if (userVote === 'down') downDelta -= 1;
-
-    if (support) upDelta += 1;
-    else downDelta += 1;
-
+    // New vote or switch vote
     setUserVote(voteType);
-    setVoteOffset((prev) => ({ up: prev.up + upDelta, down: prev.down + downDelta }));
     localStorage.setItem(`trustchain_vote_${campaign.id}`, voteType);
 
+    // Optimistic update
+    setServerVotes((prev) => {
+      let up = prev.up;
+      let down = prev.down;
+      if (previousVote === 'up') up = Math.max(0, up - 1);
+      if (previousVote === 'down') down = Math.max(0, down - 1);
+      if (voteType === 'up') up += 1;
+      if (voteType === 'down') down += 1;
+      return { up, down };
+    });
+
+    try {
+      const res = await fetch('/api/votes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignId: campaign.id,
+          voteType,
+          previousVote,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setServerVotes(data);
+      }
+    } catch {}
+
     toast.success(
-      `Opinion recorded: ${support ? 'Supported' : 'Voted Against'}! Zero gas fee required.`
+      `Opinion recorded: ${support ? 'Supported' : 'Voted Against'}!`
     );
   };
 
@@ -256,6 +331,10 @@ export default function CampaignDetailPage() {
     toast.success('Link copied to clipboard!');
   };
 
+  const totalUp = Math.max(0, (c.voteCount || 0) + serverVotes.up);
+  const totalDown = Math.max(0, (c.againstCount || 0) + serverVotes.down);
+  const isCommunityFlagged = totalDown >= 3 && totalDown > totalUp;
+
   return (
     <div className="page-wrapper">
       <div className="container">
@@ -284,11 +363,26 @@ export default function CampaignDetailPage() {
                   const badge = getCampaignStatusBadge(c);
                   return <span className={`badge ${badge.badgeCls}`} style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', background: 'rgba(7, 7, 26, 0.78)', border: '1px solid rgba(255, 255, 255, 0.2)' }} suppressHydrationWarning>{badge.label}</span>;
                 })()}
+                {isCommunityFlagged && (
+                  <span
+                    className="badge badge-danger"
+                    style={{
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      background: 'rgba(255, 71, 87, 0.4)',
+                      border: '1px solid #ff4757',
+                      color: '#fff',
+                      fontWeight: 700,
+                    }}
+                  >
+                    ⚠️ Skepticism Alert
+                  </span>
+                )}
               </div>
             </div>
 
             <h1 style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{c.title}</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '2rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
               Created by{' '}
               <Link href={`/profile?address=${c.creator}`} style={{ color: 'var(--teal)', fontFamily: 'monospace' }}>
                 {shortAddr(c.creator)}
@@ -300,6 +394,32 @@ export default function CampaignDetailPage() {
                 year: 'numeric',
               })}
             </p>
+
+            {/* Community Warning Alert Banner */}
+            {isCommunityFlagged && (
+              <div
+                style={{
+                  background: 'rgba(255, 71, 87, 0.08)',
+                  border: '1px solid rgba(255, 71, 87, 0.35)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '1rem 1.25rem',
+                  marginBottom: '1.75rem',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.85rem',
+                }}
+              >
+                <span style={{ fontSize: '1.35rem', lineHeight: 1 }}>⚠️</span>
+                <div>
+                  <div style={{ color: '#ff4757', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>
+                    Community Warning: High Skepticism Reported
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', margin: 0, lineHeight: 1.55 }}>
+                    This cause has received <strong>{totalDown} votes against</strong> compared to {totalUp} supporting. The community has flagged potential concerns. Please verify project milestones, organization credentials, and team identity before donating funds.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Progress Card */}
             <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
@@ -330,11 +450,11 @@ export default function CampaignDetailPage() {
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>donors</span>
                 </div>
                 <div>
-                  <span style={{ fontWeight: 700 }}>{c.voteCount || 0}</span>{' '}
+                  <span style={{ fontWeight: 700 }}>{totalUp}</span>{' '}
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>supporting</span>
                 </div>
                 <div>
-                  <span style={{ fontWeight: 700 }}>{c.againstCount || 0}</span>{' '}
+                  <span style={{ fontWeight: 700 }}>{totalDown}</span>{' '}
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>against</span>
                 </div>
               </div>
@@ -451,13 +571,73 @@ export default function CampaignDetailPage() {
                 </p>
 
                 {(() => {
-                  const totalUp = (c.voteCount || 0) + voteOffset.up;
-                  const totalDown = (c.againstCount || 0) + voteOffset.down;
                   const totalVotes = totalUp + totalDown;
                   const upPct = totalVotes > 0 ? Math.round((totalUp / totalVotes) * 100) : 50;
 
+                  const isFlagged = totalDown >= 3 && totalDown > totalUp;
+                  const isEndorsed = totalUp >= 5 && totalUp > totalDown * 2;
+                  const votingDisabled = isEnded || pct >= 100 || isCancelled || c.withdrawn;
+
                   return (
                     <>
+                      {isFlagged ? (
+                        <div
+                          style={{
+                            background: 'rgba(255, 71, 87, 0.1)',
+                            border: '1px solid rgba(255, 71, 87, 0.35)',
+                            borderRadius: '10px',
+                            padding: '0.85rem 1rem',
+                            marginBottom: '1.25rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.65rem',
+                            color: '#ff6b81',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <span style={{ fontSize: '1.1rem' }}>⚠️</span>
+                          <span>Community Status: <strong>Flagged for Caution</strong> ({totalDown} against vs {totalUp} supporting)</span>
+                        </div>
+                      ) : isEndorsed ? (
+                        <div
+                          style={{
+                            background: 'rgba(0, 212, 170, 0.1)',
+                            border: '1px solid rgba(0, 212, 170, 0.35)',
+                            borderRadius: '10px',
+                            padding: '0.85rem 1rem',
+                            marginBottom: '1.25rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.65rem',
+                            color: 'var(--teal)',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <span style={{ fontSize: '1.1rem' }}>✓</span>
+                          <span>Community Status: <strong>Verified Endorsement</strong> ({upPct}% positive consensus)</span>
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '10px',
+                            padding: '0.85rem 1rem',
+                            marginBottom: '1.25rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.65rem',
+                            color: 'var(--text-secondary)',
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          <span>ℹ️</span>
+                          <span>Community Status: <strong>Open Consensus</strong> ({totalVotes} votes registered)</span>
+                        </div>
+                      )}
+
                       <div className="vote-bar-wrap" style={{ marginBottom: '1.5rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
                           <span style={{ fontWeight: 600, color: 'var(--teal)' }}>Support ({totalUp})</span>
@@ -473,22 +653,43 @@ export default function CampaignDetailPage() {
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                        <button
-                          className={`btn ${userVote === 'up' ? 'btn-primary' : 'btn-outline'}`}
-                          style={userVote === 'up' ? { boxShadow: '0 0 15px rgba(0,212,170,0.4)' } : {}}
-                          onClick={() => handleVote(true)}
+                      {votingDisabled ? (
+                        <div
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '10px',
+                            padding: '1rem 1.25rem',
+                            textAlign: 'center',
+                            color: 'var(--text-muted)',
+                            fontSize: '0.9rem',
+                          }}
                         >
-                          {userVote === 'up' ? 'Supported' : 'Support Campaign'}
-                        </button>
-                        <button
-                          className={`btn ${userVote === 'down' ? 'btn-danger' : 'btn-outline'}`}
-                          style={userVote === 'down' ? { background: '#ff4757', borderColor: '#ff4757', color: '#fff' } : {}}
-                          onClick={() => handleVote(false)}
-                        >
-                          {userVote === 'down' ? 'Voted Against' : 'Vote Against'}
-                        </button>
-                      </div>
+                          🔒 Voting is closed — this campaign has {isCancelled ? 'been cancelled' : pct >= 100 ? 'reached its goal' : 'ended'}.
+                          {userVote && (
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                              Your vote: <strong style={{ color: userVote === 'up' ? 'var(--teal)' : '#ff4757' }}>{userVote === 'up' ? 'Supported' : 'Against'}</strong>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                          <button
+                            className={`btn ${userVote === 'up' ? 'btn-primary' : 'btn-outline'}`}
+                            style={userVote === 'up' ? { boxShadow: '0 0 15px rgba(0,212,170,0.4)' } : {}}
+                            onClick={() => handleVote(true)}
+                          >
+                            {userVote === 'up' ? '✓ Supported' : 'Support Campaign'}
+                          </button>
+                          <button
+                            className={`btn ${userVote === 'down' ? 'btn-danger' : 'btn-outline'}`}
+                            style={userVote === 'down' ? { background: '#ff4757', borderColor: '#ff4757', color: '#fff' } : {}}
+                            onClick={() => handleVote(false)}
+                          >
+                            {userVote === 'down' ? '✓ Voted Against' : 'Vote Against'}
+                          </button>
+                        </div>
+                      )}
                     </>
                   );
                 })()}

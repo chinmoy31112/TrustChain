@@ -57,6 +57,8 @@ function formatProfessionalCampaign(c: any): CampaignData {
   };
 }
 
+const campaignCache = new Map<number, CampaignData>();
+
 export function useAllCampaigns() {
   const fundAddress = useFundContractAddress();
 
@@ -68,13 +70,15 @@ export function useAllCampaigns() {
       enabled: Boolean(fundAddress && fundAddress !== '0x0000000000000000000000000000000000000000'),
       retry: 2,
       retryDelay: 1000,
-      staleTime: 5_000,
+      staleTime: 60_000,
     },
   });
 
   const campaigns: CampaignData[] = useMemo(() => {
     if (!Array.isArray(data)) return [];
-    return data.map(formatProfessionalCampaign);
+    const list = data.map(formatProfessionalCampaign);
+    list.forEach((c) => campaignCache.set(c.id, c));
+    return list;
   }, [data]);
 
   return { campaigns, isLoading: isError ? false : (isLoading && !data), isError, refetch };
@@ -92,13 +96,23 @@ export function useCampaign(id: number) {
       enabled: Boolean(fundAddress && id > 0),
       retry: 2,
       retryDelay: 1000,
-      staleTime: 5_000,
+      staleTime: 60_000,
     },
   });
 
-  const campaign: CampaignData | null = data ? formatProfessionalCampaign(data) : null;
+  const campaign: CampaignData | null = useMemo(() => {
+    if (data) {
+      const formatted = formatProfessionalCampaign(data);
+      campaignCache.set(id, formatted);
+      return formatted;
+    }
+    return campaignCache.get(id) || null;
+  }, [data, id]);
 
-  return { campaign, isLoading: isError ? false : (isLoading && !data), isError, refetch };
+  const hasCached = Boolean(campaignCache.get(id));
+  const effectiveLoading = hasCached ? false : (isLoading && !data);
+
+  return { campaign, isLoading: effectiveLoading, isError, refetch };
 }
 
 export function usePlatformStats() {

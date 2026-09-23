@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAllCampaigns } from '../../hooks/useCharityFund';
@@ -19,6 +19,28 @@ function CampaignsContent() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [pageSize, setPageSize] = useState<number>(9);
+  const [serverVotesMap, setServerVotesMap] = useState<Record<string, { up: number; down: number }>>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAllVotes = async () => {
+      try {
+        const res = await fetch('/api/votes');
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && typeof data === 'object') {
+            setServerVotesMap(data);
+          }
+        }
+      } catch {}
+    };
+    fetchAllVotes();
+    const interval = setInterval(fetchAllVotes, 5000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   const filteredAndSortedCampaigns = useMemo(() => {
     const now = Math.floor(Date.now() / 1000);
@@ -59,12 +81,16 @@ function CampaignsContent() {
         return pctB - pctA;
       }
       if (sortBy === 'endingSoon') return a.deadline - b.deadline;
-      if (sortBy === 'mostVoted') return b.voteCount - a.voteCount;
+      if (sortBy === 'mostVoted') {
+        const votesA = (a.voteCount || 0) + (serverVotesMap[String(a.id)]?.up || 0);
+        const votesB = (b.voteCount || 0) + (serverVotesMap[String(b.id)]?.up || 0);
+        return votesB - votesA;
+      }
       return 0;
     });
 
     return list;
-  }, [campaigns, activeCategory, activeStatus, searchQuery, sortBy]);
+  }, [campaigns, activeCategory, activeStatus, searchQuery, sortBy, serverVotesMap]);
 
   const displayedCampaigns = filteredAndSortedCampaigns.slice(0, pageSize);
 
@@ -219,6 +245,7 @@ function CampaignsContent() {
                 <Link
                   key={c.id}
                   href={`/campaign/${c.id}`}
+                  prefetch={true}
                   style={{ textDecoration: 'none', color: 'inherit' }}
                 >
                   <article className={`card campaign-card fade-up stagger-${(i % 6) + 1}`} style={{ cursor: 'pointer', height: '100%' }}>
@@ -229,9 +256,35 @@ function CampaignsContent() {
                         className="campaign-card-img"
                         loading="lazy"
                       />
-                      <span className="badge badge-purple" style={{ position: 'absolute', top: '12px', left: '12px' }}>
+                      <span className="badge badge-purple" style={{ position: 'absolute', top: '12px', left: '12px', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', background: 'rgba(7, 7, 26, 0.78)', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
                         {c.category}
                       </span>
+                      {(() => {
+                        const down = (c.againstCount || 0) + (serverVotesMap[String(c.id)]?.down || 0);
+                        const up = (c.voteCount || 0) + (serverVotesMap[String(c.id)]?.up || 0);
+                        if (down >= 3 && down > up) {
+                          return (
+                            <span
+                              className="badge badge-danger"
+                              style={{
+                                position: 'absolute',
+                                top: '12px',
+                                right: '12px',
+                                backdropFilter: 'blur(12px)',
+                                WebkitBackdropFilter: 'blur(12px)',
+                                background: 'rgba(255, 71, 87, 0.4)',
+                                border: '1px solid #ff4757',
+                                color: '#fff',
+                                fontWeight: 700,
+                                zIndex: 2,
+                              }}
+                            >
+                              ⚠️ Skepticism Alert
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                     <div className="campaign-card-body">
                       <h3 className="campaign-card-title">{c.title}</h3>
