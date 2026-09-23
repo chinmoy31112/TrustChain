@@ -38,6 +38,10 @@ export default function CreateCampaignPage() {
   useEffect(() => {
     if (isDeploySuccess && receipt && !handledReceiptRef.current) {
       handledReceiptRef.current = true;
+      try {
+        localStorage.removeItem('trustchain_cached_campaigns');
+        localStorage.removeItem('trustchain_cached_platform_stats');
+      } catch {}
       toast.success('Campaign deployed successfully on Mantle Sepolia!');
       
       // Try to parse CampaignCreated event

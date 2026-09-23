@@ -20,33 +20,9 @@ export default function DashboardPage() {
 
   const [activeTab, setActiveTab] = useState<'campaigns' | 'donations' | 'nfts'>('campaigns');
 
-  const [cachedBalance, setCachedBalance] = useState<string>(() => {
-    if (typeof window !== 'undefined' && address) {
-      return localStorage.getItem(`trustchain_balance_${address.toLowerCase()}`) || '';
-    }
-    return '';
-  });
-
-  useEffect(() => {
-    if (address) {
-      const stored = localStorage.getItem(`trustchain_balance_${address.toLowerCase()}`);
-      if (stored) setCachedBalance(stored);
-    }
-  }, [address]);
-
-  useEffect(() => {
-    if (balanceData && address) {
-      const formatted = `${(Number(balanceData.value) / 10 ** balanceData.decimals).toFixed(4)} ${balanceData.symbol}`;
-      try {
-        localStorage.setItem(`trustchain_balance_${address.toLowerCase()}`, formatted);
-      } catch {}
-      setCachedBalance(formatted);
-    }
-  }, [balanceData, address]);
-
   const balanceDisplay = balanceData
     ? `${(Number(balanceData.value) / 10 ** balanceData.decimals).toFixed(4)} ${balanceData.symbol}`
-    : (cachedBalance || '-- MNT');
+    : '-- MNT';
 
   const myCampaigns = campaigns.filter(
     (c) => address && c.creator.toLowerCase() === address.toLowerCase()

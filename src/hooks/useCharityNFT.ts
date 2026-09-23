@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useReadContract, useChainId } from 'wagmi';
 import { CHARITY_NFT_ABI, CONTRACT_ADDRESSES } from '../config/contracts';
 
@@ -9,15 +9,8 @@ export function useNFTContractAddress() {
   return CONTRACT_ADDRESSES[5003]?.CharityNFT;
 }
 
-export const ONCHAIN_BASELINE_DONOR_ADDRESS = '0x621121f08bc8eedf55d8bf0ec2f5014692c44c0f';
-
-export const ONCHAIN_BASELINE_USER_TOKENS: Record<string, number[]> = {
-  [ONCHAIN_BASELINE_DONOR_ADDRESS]: [1],
-};
-
 export function useUserNFTTokens(userAddress?: `0x${string}`) {
   const nftAddress = useNFTContractAddress();
-  const normalizedAddr = userAddress?.toLowerCase();
 
   const { data, isLoading, refetch } = useReadContract({
     address: nftAddress,
@@ -26,52 +19,17 @@ export function useUserNFTTokens(userAddress?: `0x${string}`) {
     args: userAddress ? [userAddress] : undefined,
     query: {
       enabled: Boolean(nftAddress && userAddress),
-      staleTime: 60_000,
+      staleTime: 5_000,
     },
   });
 
-  const [cachedTokens, setCachedTokens] = useState<number[]>(() => {
-    if (!normalizedAddr) return [];
-    return ONCHAIN_BASELINE_USER_TOKENS[normalizedAddr] || [];
-  });
-
-  useEffect(() => {
-    if (!normalizedAddr) {
-      setCachedTokens([]);
-      return;
-    }
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(`trustchain_cached_nft_tokens_${normalizedAddr}`);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setCachedTokens(parsed.map(Number));
-            return;
-          }
-        }
-      } catch {}
-    }
-    setCachedTokens(ONCHAIN_BASELINE_USER_TOKENS[normalizedAddr] || []);
-  }, [normalizedAddr]);
-
-  useEffect(() => {
-    if (Array.isArray(data) && normalizedAddr) {
-      try {
-        const tokens = (data as bigint[]).map((id) => Number(id));
-        localStorage.setItem(`trustchain_cached_nft_tokens_${normalizedAddr}`, JSON.stringify(tokens));
-        setCachedTokens(tokens);
-      } catch {}
-    }
-  }, [data, normalizedAddr]);
-
-  const liveTokens = Array.isArray(data) ? (data as bigint[]).map((id) => Number(id)) : [];
-  const tokenIds = liveTokens.length > 0 ? liveTokens : cachedTokens;
-  const effectiveLoading = isLoading && !data && cachedTokens.length === 0;
+  const tokenIds: number[] = Array.isArray(data)
+    ? (data as bigint[]).map((id) => Number(id))
+    : [];
 
   return {
     tokenIds,
-    isLoading: effectiveLoading,
+    isLoading: isLoading && !data,
     refetch,
   };
 }

@@ -60,6 +60,8 @@ body {
   overflow-x: hidden;
   background-image: var(--gradient-hero);
   background-attachment: fixed;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -2297,6 +2299,60 @@ select.form-control option { background: #0d0d2b; }
    RESPONSIVE ADDITIONS
    ════════════════════════════════ */
 @media (max-width: 768px) {
+  .hamburger {
+    display: flex;
+    z-index: 1001;
+  }
+
+  .navbar-links {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: rgba(10, 10, 35, 0.98);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.25rem 1.5rem;
+    gap: 0.5rem;
+    margin: 0;
+    display: none;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+    z-index: 999;
+  }
+
+  .navbar-links.open {
+    display: flex;
+  }
+
+  .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
   .profile-header {
     flex-direction: column;
     text-align: center;
@@ -2326,7 +2382,11 @@ select.form-control option { background: #0d0d2b; }
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 520px) {
+  [data-network-indicator] {
+    display: none !important;
+  }
+
   .profile-stats-grid {
     grid-template-columns: 1fr 1fr;
   }

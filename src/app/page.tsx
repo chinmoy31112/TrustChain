@@ -7,7 +7,7 @@ import { ParticleCanvas } from '../components/ParticleCanvas';
 import { formatMntLabel, formatMnt, calcProgress, getCampaignStatus } from '../utils/formatters';
 
 export default function HomePage() {
-  const { campaigns: totalCampaigns, raised: totalRaised, donors: totalDonors } = usePlatformStats();
+  const { campaigns: totalCampaigns, raised: totalRaised, donors: totalDonors, isLoading: statsLoading } = usePlatformStats();
   const { campaigns, isLoading: campaignsLoading } = useAllCampaigns();
 
   const floatingCampaigns = campaigns
@@ -53,24 +53,36 @@ export default function HomePage() {
 
             <div style={{ display: 'flex', gap: '2rem', marginTop: '2.5rem', flexWrap: 'wrap' }}>
               <div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--teal)' }}>
-                  {formatMntLabel(totalRaised)}
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--teal)', minHeight: '2rem', display: 'flex', alignItems: 'center' }}>
+                  {statsLoading ? (
+                    <span className="skeleton" style={{ width: '80px', height: '24px', borderRadius: '6px', display: 'inline-block' }}></span>
+                  ) : (
+                    formatMntLabel(totalRaised)
+                  )}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
                   MNT Raised
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>
-                  {totalCampaigns}
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, minHeight: '2rem', display: 'flex', alignItems: 'center' }}>
+                  {statsLoading ? (
+                    <span className="skeleton" style={{ width: '40px', height: '24px', borderRadius: '6px', display: 'inline-block' }}></span>
+                  ) : (
+                    totalCampaigns
+                  )}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
                   Campaigns
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>
-                  {totalDonors}
+                <div style={{ fontSize: '1.5rem', fontWeight: 900, minHeight: '2rem', display: 'flex', alignItems: 'center' }}>
+                  {statsLoading ? (
+                    <span className="skeleton" style={{ width: '40px', height: '24px', borderRadius: '6px', display: 'inline-block' }}></span>
+                  ) : (
+                    totalDonors
+                  )}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
                   Donors

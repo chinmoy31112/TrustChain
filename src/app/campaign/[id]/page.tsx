@@ -64,10 +64,20 @@ export default function CampaignDetailPage() {
   React.useEffect(() => {
     if (isDonateSuccess) {
       toast.success('Donation confirmed! Your NFT receipt has been minted.');
+      try {
+        localStorage.removeItem('trustchain_cached_campaigns');
+        localStorage.removeItem('trustchain_cached_platform_stats');
+        localStorage.removeItem('trustchain_cached_leaderboard');
+        if (address) {
+          localStorage.removeItem(`trustchain_cached_donor_${address.toLowerCase()}`);
+          localStorage.removeItem(`trustchain_cached_user_donations_${address.toLowerCase()}`);
+          localStorage.removeItem(`trustchain_cached_nft_tokens_${address.toLowerCase()}`);
+        }
+      } catch {}
       refetch();
       refetchDonations();
     }
-  }, [isDonateSuccess, toast, refetch, refetchDonations]);
+  }, [isDonateSuccess, toast, refetch, refetchDonations, address]);
 
   React.useEffect(() => {
     if (isVoteSuccess) {

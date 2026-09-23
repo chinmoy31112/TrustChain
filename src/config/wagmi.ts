@@ -8,6 +8,9 @@ export const TARGET_CHAIN_ID = mantleSepoliaTestnet.id; // 5003
 export const wagmiConfig = createConfig({
   chains: [mantleSepoliaTestnet],
   connectors: [
+    injected({ target: 'metaMask' }),
+    injected({ target: 'phantom' }),
+    injected({ target: 'coinbaseWallet' }),
     injected(),
   ],
   multiInjectedProviderDiscovery: true,
@@ -18,3 +21,4 @@ export const wagmiConfig = createConfig({
   // Reduce polling to minimize background RPC calls and improve performance
   pollingInterval: 15_000,
 });
+
