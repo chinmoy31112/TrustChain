@@ -6,7 +6,7 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId 
 import { parseEther, decodeEventLog } from 'viem';
 import { CHARITY_FUND_ABI, CATEGORIES } from '../../config/contracts';
 import { useFundContractAddress } from '../../hooks/useCharityFund';
-import { SafeImage, formatImageUrl } from '../../components/SafeImage';
+import { SafeImage, formatImageUrl, isWebpageUrl } from '../../components/SafeImage';
 import { useToast } from '../../components/Toast';
 import { TARGET_CHAIN_ID } from '../../config/wagmi';
 
@@ -27,6 +27,46 @@ export default function CreateCampaignPage() {
     goal: '1.0',
     duration: '30',
   });
+
+  const [imagePreviewState, setImagePreviewState] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [imageFitMode, setImageFitMode] = useState<'contain' | 'cover'>('contain');
+
+  useEffect(() => {
+    const raw = formData.imageUrl.trim();
+    if (!raw) {
+      setImagePreviewState('idle');
+      return;
+    }
+    if (isWebpageUrl(raw)) {
+      setImagePreviewState('invalid');
+      return;
+    }
+
+    setImagePreviewState('checking');
+    const formatted = formatImageUrl(raw);
+    const testImg = new Image();
+    let isCancelled = false;
+
+    testImg.onload = () => {
+      if (!isCancelled) setImagePreviewState('valid');
+    };
+    testImg.onerror = () => {
+      const proxy = `https://images.weserv.nl/?url=${encodeURIComponent(raw)}`;
+      const proxyImg = new Image();
+      proxyImg.onload = () => {
+        if (!isCancelled) setImagePreviewState('valid');
+      };
+      proxyImg.onerror = () => {
+        if (!isCancelled) setImagePreviewState('invalid');
+      };
+      proxyImg.src = proxy;
+    };
+    testImg.src = formatted;
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [formData.imageUrl]);
 
   const { data: txHash, writeContract, isPending: isDeploying } = useWriteContract();
   const { isLoading: isWaitingReceipt, isSuccess: isDeploySuccess, data: receipt } = useWaitForTransactionReceipt({
@@ -98,6 +138,10 @@ export default function CreateCampaignPage() {
       const d = parseInt(formData.duration);
       if (isNaN(d) || d < 1 || d > 365) {
         toast.error('Duration must be between 1 and 365 days');
+        return false;
+      }
+      if (formData.imageUrl.trim() && isWebpageUrl(formData.imageUrl.trim())) {
+        toast.error('The image URL is a social media webpage, not a photo file. Please provide a direct image link or leave it empty.');
         return false;
       }
     }
@@ -228,7 +272,7 @@ export default function CreateCampaignPage() {
                 >
                   {currentStep > s.step ? '✓' : s.step}
                 </div>
-                <span style={{ fontSize: '0.8rem', color: currentStep >= s.step ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                <span style={{ fontSize: '0.8rem', color: currentStep >= s.step ? 'var(--text-primary)' : 'var(--text-muted)', whiteSpace: 'nowrap', wordBreak: 'keep-all', textAlign: 'center' }}>
                   {s.title}
                 </span>
               </div>
@@ -332,15 +376,27 @@ export default function CreateCampaignPage() {
                 </div>
 
                 <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                  <label className="form-label">Cover Image URL</label>
+                  <label className="form-label">Cover Image URL (Optional)</label>
                   <input
                     type="url"
                     className="form-control"
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="https://example.com/photo.jpg or ipfs://Qm..."
                     value={formData.imageUrl}
                     onChange={(e) => handleChange('imageUrl', e.target.value)}
                   />
-                  <p className="form-hint">Direct link to a high-quality photo</p>
+                  <p className="form-hint">Direct link to an image file (.jpg, .png, .webp) or IPFS CID</p>
+
+                  {formData.imageUrl.trim() && isWebpageUrl(formData.imageUrl.trim()) && (
+                    <div style={{ marginTop: '0.6rem', padding: '0.75rem 1rem', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '0.82rem', color: '#fbbf24', display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
+                      <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>⚠️</span>
+                      <div>
+                        <strong>Webpage link detected instead of direct image file.</strong>
+                        <div style={{ color: 'var(--text-secondary)', marginTop: '0.25rem', fontSize: '0.78rem', lineHeight: 1.4 }}>
+                          Facebook, Instagram, and social media post links are HTML webpages that block image embedding. To use an image from a webpage, right-click the image and select <em>&ldquo;Copy Image Address&rdquo;</em> (which ends in .jpg, .png, etc.), or upload your image to an IPFS gateway or image host.
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-group" style={{ marginBottom: '2rem' }}>
@@ -355,13 +411,131 @@ export default function CreateCampaignPage() {
                   <p className="form-hint">Decentralized IPFS CID for extended documentation</p>
                 </div>
 
-                {formData.imageUrl && (
-                  <div style={{ marginBottom: '2rem', borderRadius: '12px', overflow: 'hidden', height: '180px' }}>
-                    <SafeImage
-                      src={formData.imageUrl}
-                      alt="Preview"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                {formData.imageUrl.trim() && (
+                  <div style={{ marginBottom: '2rem' }}>
+                    {imagePreviewState === 'checking' && (
+                      <div style={{ height: '140px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                        <span>Verifying image link...</span>
+                      </div>
+                    )}
+
+                    {imagePreviewState === 'invalid' && (
+                      <div style={{
+                        padding: '1.25rem',
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px dashed rgba(239, 68, 68, 0.35)',
+                        borderRadius: '12px',
+                        textAlign: 'center',
+                      }}>
+                        <div style={{ fontSize: '1.4rem', marginBottom: '0.35rem' }}>⚠️</div>
+                        <div style={{ color: '#f87171', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.3rem' }}>
+                          Unable to load image from this URL
+                        </div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>
+                          Web browsers require a direct link to an image file (.jpg, .png, .webp) or an IPFS gateway. Webpages like Facebook posts do not serve raw image data. Please right-click the image and choose &ldquo;Copy Image Address&rdquo; or leave this field empty.
+                        </p>
+                      </div>
+                    )}
+
+                    {imagePreviewState === 'valid' && (
+                      <div style={{
+                        borderRadius: '14px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        border: '1px solid rgba(0, 229, 163, 0.35)',
+                        background: '#070914',
+                        minHeight: '260px',
+                        maxHeight: '440px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        {/* Ambient blurred backdrop for cohesive colors in empty letterbox areas */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: -20,
+                            backgroundImage: `url(${formatImageUrl(formData.imageUrl)})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            filter: 'blur(25px) brightness(0.25)',
+                            opacity: 0.7,
+                            pointerEvents: 'none',
+                          }}
+                        />
+
+                        {/* Full Image */}
+                        <SafeImage
+                          src={formData.imageUrl}
+                          alt="Campaign preview"
+                          style={{
+                            position: 'relative',
+                            zIndex: 1,
+                            width: '100%',
+                            maxHeight: '440px',
+                            height: imageFitMode === 'cover' ? '320px' : 'auto',
+                            objectFit: imageFitMode,
+                            display: 'block',
+                          }}
+                        />
+
+                        {/* View Mode Toggle */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '10px',
+                          right: '10px',
+                          zIndex: 3,
+                          display: 'flex',
+                          gap: '6px',
+                        }}>
+                          <button
+                            type="button"
+                            onClick={() => setImageFitMode(prev => prev === 'contain' ? 'cover' : 'contain')}
+                            style={{
+                              background: 'rgba(7, 7, 26, 0.85)',
+                              backdropFilter: 'blur(8px)',
+                              WebkitBackdropFilter: 'blur(8px)',
+                              border: '1px solid rgba(255, 255, 255, 0.2)',
+                              color: '#cbd5e1',
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              transition: 'all 0.2s ease',
+                            }}
+                            title="Toggle between uncropped full image and banner crop"
+                          >
+                            <span>{imageFitMode === 'contain' ? '🖼️ Full View' : '📐 Banner View'}</span>
+                          </button>
+                        </div>
+
+                        {/* Verified Badge */}
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '10px',
+                          right: '10px',
+                          zIndex: 3,
+                          background: 'rgba(7, 7, 26, 0.88)',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          color: '#00e5a3',
+                          border: '1px solid rgba(0,229,163,0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                        }}>
+                          ✓ Image verified
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -409,7 +583,7 @@ export default function CreateCampaignPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
                   <button type="button" className="btn btn-outline" onClick={prevStep} disabled={isDeploying || isWaitingReceipt}>
                     ← Back
                   </button>

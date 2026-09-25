@@ -129,7 +129,7 @@ function ProfileContent() {
         {/* Stats Grid */}
         <div className="grid-4" style={{ marginBottom: '2.5rem' }}>
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--teal)' }}>
+            <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--teal)', whiteSpace: 'nowrap' }}>
               {formatMnt(totalDonated)} MNT
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>

@@ -86,6 +86,8 @@ export function Navbar() {
                 background: 'rgba(255,255,255,0.05)',
                 fontSize: '0.8rem',
                 border: '1px solid var(--border)',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}
             >
               <span
@@ -106,6 +108,7 @@ export function Navbar() {
             className={`btn btn-primary btn-sm ${isConnected ? 'connected' : ''}`}
             onClick={() => setIsWalletModalOpen(true)}
             data-connect-btn
+            style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             {isConnected && address ? (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>

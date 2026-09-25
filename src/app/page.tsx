@@ -52,7 +52,7 @@ export default function HomePage() {
             </div>
 
             <div style={{ display: 'flex', gap: '2rem', marginTop: '2.5rem', flexWrap: 'wrap' }}>
-              <div>
+              <div style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--teal)', minHeight: '2rem', display: 'flex', alignItems: 'center' }}>
                   {statsLoading ? (
                     <span className="skeleton" style={{ width: '80px', height: '24px', borderRadius: '6px', display: 'inline-block' }}></span>
@@ -60,11 +60,11 @@ export default function HomePage() {
                     formatMntLabel(totalRaised)
                   )}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em', whiteSpace: 'nowrap' }}>
                   MNT Raised
                 </div>
               </div>
-              <div>
+              <div style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, minHeight: '2rem', display: 'flex', alignItems: 'center' }}>
                   {statsLoading ? (
                     <span className="skeleton" style={{ width: '40px', height: '24px', borderRadius: '6px', display: 'inline-block' }}></span>
@@ -72,11 +72,11 @@ export default function HomePage() {
                     totalCampaigns
                   )}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em', whiteSpace: 'nowrap' }}>
                   Campaigns
                 </div>
               </div>
-              <div>
+              <div style={{ whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, minHeight: '2rem', display: 'flex', alignItems: 'center' }}>
                   {statsLoading ? (
                     <span className="skeleton" style={{ width: '40px', height: '24px', borderRadius: '6px', display: 'inline-block' }}></span>
@@ -84,7 +84,7 @@ export default function HomePage() {
                     totalDonors
                   )}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.08em', whiteSpace: 'nowrap' }}>
                   Donors
                 </div>
               </div>
